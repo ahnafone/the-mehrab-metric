@@ -8,7 +8,7 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
     <footer class="app-footer">
       <div class="footer-content glass-panel">
         <p class="footer-text">
-          This Website is certified by <span class="highlight">Mehrab</span> and his underlings
+          This Website is certified by <span class="highlight">Mehrab</span> and his underlings.
         </p>
         <p class="copyright">&copy; 2026 The Mehrab Metric. All rights reserved.</p>
       </div>
@@ -62,4 +62,4 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
     }
   `
 })
-export class FooterComponent {}
+export class FooterComponent { }

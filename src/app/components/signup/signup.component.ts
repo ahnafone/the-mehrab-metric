@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/cor
 import { FormBuilder, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { RankingService } from '../../services/ranking.service';
+import { Merit } from '../../models/friend';
 
 @Component({
   selector: 'app-signup',
@@ -62,18 +63,26 @@ export class SignupComponent {
       this.isSubmitting.set(true);
       
       const formData = this.signupForm.value;
-      
-      // Simulate API call
+      const avatarUrl = formData.avatarUrl || this.imagePreview() || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name}`;
+
+      const application = {
+        name: formData.name as string,
+        reasoning: formData.reasoning as string,
+        avatarUrl: avatarUrl,
+        merits: (formData.merits || []) as Merit[]
+      };
+
+      // Simulate network delay
       setTimeout(() => {
-        console.log('Submitted Data:', formData);
+        this.rankingService.submitApplication(application);
         
-        this.successMessage.set('Application submitted with all merits! Mehrab will judge you shortly.');
+        this.successMessage.set('Application submitted! Mehrab will judge you shortly.');
         this.isSubmitting.set(false);
 
         setTimeout(() => {
           this.router.navigate(['/']);
-        }, 2500);
-      }, 2000);
+        }, 2000);
+      }, 1500);
     }
   }
 }

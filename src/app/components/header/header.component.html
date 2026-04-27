@@ -1,0 +1,19 @@
+<header class="app-header">
+  <div class="header-content glass-panel">
+    <h1 class="title" routerLink="/">
+      {{ currentTitle().prefix }}<span class="text-gradient">{{ currentTitle().name }}</span>{{ currentTitle().suffix }}
+    </h1>
+    <p class="subtitle">Official and Unbiased Rankings. Decided by Mehrab.</p>
+
+    <nav class="header-nav">
+      <button class="nav-button join-button" (click)="copyInviteLink()">
+        <fa-icon [icon]="faInvite"></fa-icon>
+        {{ copied() ? 'Link Copied!' : 'Invite a Pleb' }}
+      </button>
+      <a routerLink="/admin" class="nav-button admin-button">
+        <fa-icon [icon]="faJudge"></fa-icon>
+        Bench of Judgment
+      </a>
+    </nav>
+  </div>
+</header>

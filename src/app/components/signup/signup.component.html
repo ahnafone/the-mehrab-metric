@@ -1,11 +1,15 @@
+<div class="back-button-container">
+  <a routerLink="/" class="back-button">
+    <span class="arrow">←</span> Back to Leaderboard
+  </a>
+</div>
+
 <div class="signup-container">
+
+
   <div class="signup-card glass-panel">
-    <div class="signup-top">
-      <a routerLink="/" class="back-button">
-        <span class="arrow">←</span> Back
-      </a>
-    </div>
-    
+
+
     <div class="signup-header">
       <h2 class="signup-title">Join the <span class="text-gradient">Metric</span></h2>
       <p class="signup-subtitle">Submit your plea to Mehrab for a ranking.</p>
@@ -15,29 +19,18 @@
       <!-- Basic Info -->
       <div class="form-group">
         <label for="name">Name</label>
-        <input 
-          id="name" 
-          type="text" 
-          formControlName="name" 
-          placeholder="Your full name"
-          class="form-input"
-        >
+        <input id="name" type="text" formControlName="name" placeholder="Your full name" class="form-input">
         @if (signupForm.get('name')?.invalid && signupForm.get('name')?.touched) {
-          <span class="error-text">Name is required</span>
+        <span class="error-text">Name is required</span>
         }
       </div>
 
       <div class="form-group">
         <label for="reasoning">Why do you deserve a rank?</label>
-        <textarea 
-          id="reasoning" 
-          formControlName="reasoning" 
-          placeholder="Explain yourself to Mehrab..."
-          class="form-input textarea"
-          rows="3"
-        ></textarea>
+        <textarea id="reasoning" formControlName="reasoning" placeholder="Explain yourself to Mehrab..."
+          class="form-input textarea" rows="3"></textarea>
         @if (signupForm.get('reasoning')?.invalid && signupForm.get('reasoning')?.touched) {
-          <span class="error-text">You must provide a reason</span>
+        <span class="error-text">You must provide a reason</span>
         }
       </div>
 
@@ -47,24 +40,14 @@
         <div class="avatar-options">
           <div class="form-group">
             <label class="sub-label">Image URL</label>
-            <input 
-              type="text" 
-              formControlName="avatarUrl" 
-              placeholder="https://example.com/photo.jpg"
-              class="form-input"
-            >
+            <input type="text" formControlName="avatarUrl" placeholder="https://example.com/photo.jpg"
+              class="form-input">
           </div>
           <div class="divider"><span>OR</span></div>
           <div class="form-group">
             <label class="sub-label">Upload Image</label>
             <div class="file-upload-wrapper">
-              <input 
-                type="file" 
-                (change)="onFileSelected($event)" 
-                accept="image/*"
-                class="file-input"
-                id="file-upload"
-              >
+              <input type="file" (change)="onFileSelected($event)" accept="image/*" class="file-input" id="file-upload">
               <label for="file-upload" class="file-label">
                 {{ fileName() || 'Choose a file...' }}
               </label>
@@ -72,9 +55,9 @@
           </div>
         </div>
         @if (imagePreview()) {
-          <div class="preview-container">
-            <img [src]="imagePreview()" alt="Preview" class="avatar-preview">
-          </div>
+        <div class="preview-container">
+          <img [src]="imagePreview()" alt="Preview" class="avatar-preview">
+        </div>
         }
       </div>
 
@@ -86,55 +69,42 @@
             + Add Merit
           </button>
         </div>
-        
+
         <div formArrayName="merits" class="merits-list">
           @for (merit of merits.controls; track $index) {
-            <div [formGroupName]="$index" class="merit-item glass-panel">
-              <div class="form-group">
-                <input 
-                  type="text" 
-                  formControlName="title" 
-                  placeholder="Merit Title (e.g. Portfolio)"
-                  class="form-input small"
-                >
-              </div>
-              <div class="form-group">
-                <input 
-                  type="text" 
-                  formControlName="link" 
-                  placeholder="https://..."
-                  class="form-input small"
-                >
-              </div>
-              <button type="button" (click)="removeMerit($index)" class="remove-button">
-                &times;
-              </button>
+          <div [formGroupName]="$index" class="merit-item glass-panel">
+            <div class="form-group">
+              <input type="text" formControlName="title" placeholder="Merit Title (e.g. Portfolio)"
+                class="form-input small">
             </div>
+            <div class="form-group">
+              <input type="text" formControlName="link" placeholder="https://..." class="form-input small">
+            </div>
+            <button type="button" (click)="removeMerit($index)" class="remove-button">
+              &times;
+            </button>
+          </div>
           } @empty {
-            <p class="empty-text">No additional merits added yet.</p>
+          <p class="empty-text">No additional merits added yet.</p>
           }
         </div>
       </div>
 
       <div class="form-actions">
-        <button 
-          type="submit" 
-          [disabled]="signupForm.invalid || isSubmitting()" 
-          class="submit-button"
-        >
+        <button type="submit" [disabled]="signupForm.invalid || isSubmitting()" class="submit-button">
           @if (isSubmitting()) {
-            Processing...
+          Processing...
           } @else {
-            Submit Application
+          Submit Application
           }
         </button>
       </div>
     </form>
 
     @if (successMessage()) {
-      <div class="success-banner">
-        {{ successMessage() }}
-      </div>
+    <div class="success-banner">
+      {{ successMessage() }}
+    </div>
     }
   </div>
 </div>

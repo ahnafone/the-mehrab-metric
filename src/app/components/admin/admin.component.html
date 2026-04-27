@@ -1,0 +1,138 @@
+<div class="back-to-leaderboard">
+  <a routerLink="/" class="admin-back-link">← Back to Leaderboard</a>
+</div>
+
+<div class="admin-layout">
+  <!-- Left Sidebar: Applications -->
+  <aside class="sidebar glass-panel left">
+
+    <div class="sidebar-header">
+      <h3>Applications</h3>
+      <span class="count">{{ applications().length }}</span>
+    </div>
+    <div class="list-container">
+      @for (app of applications(); track app.id) {
+      <div class="list-item" [class.active]="selectedApplication()?.id === app.id" (click)="selectApplication(app)">
+        <img [src]="app.avatarUrl" [alt]="app.name" class="mini-avatar">
+        <div class="item-info">
+          <span class="name">{{ app.name }}</span>
+          <span class="date">{{ app.submittedAt | date:'shortDate' }}</span>
+        </div>
+      </div>
+      } @empty {
+      <p class="empty-msg">No new pleas.</p>
+      }
+    </div>
+  </aside>
+
+  <!-- Center Pane: Judge -->
+  <main class="main-judge">
+    @if (selectedApplication()) {
+    <div class="judge-card glass-panel highlight-blue">
+      <div class="judge-header">
+        <img [src]="selectedApplication()?.avatarUrl" class="large-avatar">
+        <h2>Judging: {{ selectedApplication()?.name }}</h2>
+      </div>
+
+      <div class="judge-details">
+        <section>
+          <h4>Plea reasoning</h4>
+          <p>{{ selectedApplication()?.reasoning }}</p>
+        </section>
+
+        @if (selectedApplication()?.merits?.length) {
+        <section>
+          <h4>Credentials (Merits)</h4>
+          <ul class="merits-list">
+            @for (merit of selectedApplication()?.merits; track $index) {
+            <li>
+              <a [href]="merit.link" target="_blank" class="merit-link">
+                {{ merit.title }} <span class="external-icon">↗</span>
+              </a>
+            </li>
+            }
+          </ul>
+        </section>
+        }
+
+        <form [formGroup]="judgeForm" (ngSubmit)="onJudge()" class="judge-form">
+          <div class="form-group">
+            <label>Final Score (Meh)</label>
+            <div class="score-input-wrapper">
+              <input type="number" step="0.01" formControlName="score" class="form-input">
+              <span class="unit">Meh</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Mehrab's Verdict</label>
+            <textarea formControlName="reasoning" class="form-input textarea" rows="4"></textarea>
+          </div>
+
+          <button type="submit" class="submit-button judge">Assign Rank</button>
+        </form>
+      </div>
+    </div>
+    } @else if (selectedFriend()) {
+    <div class="judge-card glass-panel highlight-purple">
+      <div class="judge-header">
+        <img [src]="selectedFriend()?.avatarUrl" class="large-avatar">
+        <h2>Editing: {{ selectedFriend()?.name }}</h2>
+      </div>
+
+      <div class="judge-details">
+        <form [formGroup]="editForm" (ngSubmit)="onUpdateFriend()" class="judge-form">
+          <div class="form-group">
+            <label>Current Score</label>
+            <div class="score-input-wrapper">
+              <input type="number" step="0.01" formControlName="score" class="form-input">
+              <span class="unit">MEH</span>
+            </div>
+            @if (editForm.get('score')?.disabled) {
+            <span class="fixed-score-note">This score is immutable and ordained by the system.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label>Updated Reasoning</label>
+            <textarea formControlName="reasoning" class="form-input textarea" rows="4"></textarea>
+          </div>
+
+          <div class="action-buttons">
+            <button type="submit" class="submit-button update">Update Rank</button>
+            @if (canExile()) {
+              <button type="button" (click)="onDeleteFriend(selectedFriend()!)" class="delete-button">Exile</button>
+            }
+          </div>
+        </form>
+      </div>
+    </div>
+    } @else {
+    <div class="empty-state glass-panel">
+      <div class="empty-icon">⚖️</div>
+      <h2>The Bench of Judgment</h2>
+      <p>Select a plea or a subject from the sidebars to begin the process.</p>
+      <p class="signature">- Mehrab</p>
+    </div>
+    }
+  </main>
+
+  <!-- Right Sidebar: Existing Users -->
+  <aside class="sidebar glass-panel right">
+    <div class="sidebar-header">
+      <h3>Official Ranks</h3>
+      <span class="count">{{ friends().length }}</span>
+    </div>
+    <div class="list-container">
+      @for (friend of friends(); track friend.id) {
+      <div class="list-item" [class.active]="selectedFriend()?.id === friend.id" (click)="selectFriend(friend)">
+        <img [src]="friend.avatarUrl" [alt]="friend.name" class="mini-avatar">
+        <div class="item-info">
+          <span class="name">{{ friend.name }}</span>
+          <span class="score">{{ friend.score }} Meh</span>
+        </div>
+      </div>
+      }
+    </div>
+  </aside>
+</div>
