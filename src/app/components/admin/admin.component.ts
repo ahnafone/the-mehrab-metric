@@ -1,8 +1,9 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { RankingService } from '../../services/ranking.service';
+import { AuthService } from '../../services/auth.service';
 import { Friend, Application, FriendType } from '../../models/friend';
 
 @Component({
@@ -15,7 +16,9 @@ import { Friend, Application, FriendType } from '../../models/friend';
 })
 export class AdminComponent {
   private rankingService = inject(RankingService);
+  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
+  private router = inject(Router);
 
   applications = this.rankingService.applications;
   friends = this.rankingService.sortedFriends;
@@ -67,39 +70,51 @@ export class AdminComponent {
     }
   }
 
-  onJudge() {
+  async onJudge() {
     const app = this.selectedApplication();
     if (app && this.judgeForm.valid) {
       const { score, reasoning } = this.judgeForm.getRawValue();
-      this.rankingService.judgeApplication(app.id, score!, reasoning!);
-      this.selectedApplication.set(null);
-      this.judgeForm.reset({ score: 0.5, reasoning: '' });
+      try {
+        await this.rankingService.judgeApplication(app.id, score!, reasoning!);
+        this.selectedApplication.set(null);
+        this.judgeForm.reset({ score: 0.5, reasoning: '' });
+      } catch (error) {
+        console.error('Judgment failed:', error);
+      }
     }
   }
 
-  onUpdateFriend() {
+  async onUpdateFriend() {
     const friend = this.selectedFriend();
     if (friend && this.editForm.valid) {
       const { score, reasoning } = this.editForm.getRawValue();
-      this.rankingService.updateFriend(friend.id, {
-        score: score!,
-        reasoning: reasoning!
-      });
-      this.selectedFriend.set(null);
-      this.editForm.reset();
+      try {
+        await this.rankingService.updateFriend(friend.id, {
+          score: score!,
+          reasoning: reasoning!
+        });
+        this.selectedFriend.set(null);
+        this.editForm.reset();
+      } catch (error) {
+        console.error('Update failed:', error);
+      }
     }
   }
 
-  onDeleteFriend(friend: Friend) {
+  async onDeleteFriend(friend: Friend) {
     if (friend.friendType !== FriendType.Plebeians) {
       alert('This subject is protected and cannot be exiled.');
       return;
     }
 
     if (confirm(`Are you sure you want to delete ${friend.name} from the metric?`)) {
-      this.rankingService.deleteFriend(friend.id);
-      if (this.selectedFriend()?.id === friend.id) {
-        this.selectedFriend.set(null);
+      try {
+        await this.rankingService.deleteFriend(friend.id);
+        if (this.selectedFriend()?.id === friend.id) {
+          this.selectedFriend.set(null);
+        }
+      } catch (error) {
+        console.error('Exile failed:', error);
       }
     }
   }

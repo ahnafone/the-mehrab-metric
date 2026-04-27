@@ -1,0 +1,40 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // Helper function to check if the user is Mehrab
+    function isMehrab() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/friends/$(request.auth.token.email)).data.friendType == "Mehrab";
+    }
+
+    match /users/{id} {
+      // Any authenticated user can read the leaderboard
+      allow read: if request.auth != null;
+      
+      // Only Mehrab can create new friends (via judgment)
+      allow create: if isMehrab();
+      
+      // User can update their own profile, or Mehrab can update anyone
+      allow update: if isMehrab() || (request.auth != null && email == request.auth.token.email);
+      
+      // Only Mehrab can exile (delete) subjects
+      allow delete: if isMehrab();
+    }
+    
+    match /applications/{id} {
+      // Only Mehrab can see the queue of applications
+      allow read: if isMehrab();
+      
+      // Any one can submit a plea for entry
+      allow create: if true;
+      
+      // Only Mehrab can process applications
+      allow update, delete: if isMehrab();
+    }
+  }
+}

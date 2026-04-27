@@ -1,70 +1,37 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { Friend, Application, FriendType } from '../models/friend';
+import {
+  Firestore,
+  collection,
+  collectionData,
+  doc,
+  setDoc,
+  deleteDoc,
+  updateDoc,
+  addDoc,
+  Timestamp,
+  query,
+  orderBy
+} from '@angular/fire/firestore';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { Observable, map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RankingService {
-  private friendsSignal = signal<Friend[]>([
-    {
-      id: '1',
-      name: 'Mehrab',
-      score: 1.0,
-      friendType: FriendType.Mehrab,
-      reasoning: 'Ekta thabbor marmu',
-      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mehrab&backgroundColor=b6e3f4',
-      joinedAt: new Date('2024-01-01')
-    },
-    {
-      id: '2',
-      name: 'Shafkat',
-      friendType: FriendType.Underlings,
-      score: 1.32,
-      reasoning: 'Always brings snacks to the LAN party. Solid performance.',
-      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex&backgroundColor=c0aede',
-      joinedAt: new Date('2024-01-05')
-    },
-    {
-      id: '3',
-      name: 'Aaida',
-      friendType: FriendType.Plebeians,
-      score: 1.72,
-      reasoning: 'Decent memes, but sometimes replies with "K".',
-      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sam&backgroundColor=ffdfbf',
-      joinedAt: new Date('2024-02-10')
-    },
-    {
-      id: '4',
-      name: 'Ahnaf',
-      friendType: FriendType.Underlings,
-      score: 0.4,
-      reasoning: 'Still owes me $5 from 2021. Points deducted.',
-      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan&backgroundColor=ffd5dc',
-      joinedAt: new Date('2024-02-15')
-    },
-    {
-      id: '5',
-      name: 'Ishmam',
-      friendType: FriendType.Underlings,
-      score: 0.0,
-      reasoning: 'Has yellow teeth.',
-      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Taylor&backgroundColor=d1d4f9',
-      joinedAt: new Date('2024-03-01')
-    }
-  ]);
+  private firestore = inject(Firestore);
 
-  private applicationsSignal = signal<Application[]>([
-    {
-      id: 'app-1',
-      name: 'Orchit',
-      reasoning: 'I have a collection of rare mechanical keyboards.',
-      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Orchit&backgroundColor=b6e3f4',
-      merits: [
-        { title: 'Keyboard Collection', link: 'https://example.com/keyboards' }
-      ],
-      submittedAt: new Date()
-    }
-  ]);
+  private friendsCollection = collection(this.firestore, 'users');
+  private applicationsCollection = collection(this.firestore, 'applications');
+
+  // Friends signal synced with Firestore
+  private friends$ = collectionData(this.friendsCollection, { idField: 'id' }) as Observable<Friend[]>;
+  private friendsSignal = toSignal(this.friends$, { initialValue: [] });
+
+  // Applications signal synced with Firestore
+  private applications$ = collectionData(this.applicationsCollection, { idField: 'id' }) as Observable<Application[]>;
+  private applicationsSignal = toSignal(this.applications$, { initialValue: [] });
 
   public sortedFriends = computed(() => {
     return [...this.friendsSignal()].sort((a, b) => b.score - a.score);
@@ -72,53 +39,59 @@ export class RankingService {
 
   public applications = computed(() => this.applicationsSignal());
 
-  private snapshotRanks() {
+  private async snapshotRanks() {
     const sorted = this.sortedFriends();
-    this.friendsSignal.update(friends =>
-      friends.map(f => {
-        const currentRank = sorted.findIndex(s => s.id === f.id) + 1;
-        return { ...f, previousRank: currentRank > 0 ? currentRank : f.previousRank };
-      })
-    );
+    const updates = sorted.map((f, index) => {
+      const currentRank = index + 1;
+      const friendDoc = doc(this.firestore, `users/${f.id}`);
+      return updateDoc(friendDoc, { previousRank: currentRank });
+    });
+    await Promise.all(updates);
   }
 
-  public submitApplication(app: Omit<Application, 'id' | 'submittedAt'>) {
-    const newApp: Application = {
-      ...app,
-      id: `app-${Date.now()}`,
-      submittedAt: new Date()
+  public async submitApplication(appData: Omit<Application, 'id' | 'submittedAt'>) {
+    const newApp = {
+      ...appData,
+      submittedAt: Timestamp.now()
     };
-    this.applicationsSignal.update(apps => [...apps, newApp]);
+    // Use email as ID for applications
+    const appDoc = doc(this.firestore, `applications/${appData.email}`);
+    await setDoc(appDoc, newApp);
   }
 
-  public judgeApplication(appId: string, score: number, reasoning: string) {
-    this.snapshotRanks();
+  public async judgeApplication(appId: string, score: number, reasoning: string) {
+    await this.snapshotRanks();
     const app = this.applicationsSignal().find(a => a.id === appId);
     if (app) {
-      const newFriend: Friend = {
-        id: `friend-${Date.now()}`,
+      const newFriend: Omit<Friend, 'id'> = {
         name: app.name,
+        email: app.email,
         score: score,
         reasoning: reasoning,
         friendType: FriendType.Plebeians,
         avatarUrl: app.avatarUrl,
         merits: app.merits,
-        joinedAt: new Date()
+        joinedAt: Timestamp.now()
       };
-      this.friendsSignal.update(friends => [...friends, newFriend]);
-      this.applicationsSignal.update(apps => apps.filter(a => a.id !== appId));
+
+      // Use email as ID for friends
+      const friendDoc = doc(this.firestore, `users/${app.email}`);
+      await setDoc(friendDoc, newFriend);
+
+      // Remove from applications
+      await deleteDoc(doc(this.firestore, `applications/${appId}`));
     }
   }
 
-  public updateFriend(id: string, updates: Partial<Friend>) {
-    this.snapshotRanks();
-    this.friendsSignal.update(friends =>
-      friends.map(f => f.id === id ? { ...f, ...updates } : f)
-    );
+  public async updateFriend(id: string, updates: Partial<Friend>) {
+    await this.snapshotRanks();
+    const friendDoc = doc(this.firestore, `users/${id}`);
+    await updateDoc(friendDoc, updates);
   }
 
-  public deleteFriend(id: string) {
-    this.snapshotRanks();
-    this.friendsSignal.update(friends => friends.filter(f => f.id !== id));
+  public async deleteFriend(id: string) {
+    await this.snapshotRanks();
+    const friendDoc = doc(this.firestore, `users/${id}`);
+    await deleteDoc(friendDoc);
   }
 }

@@ -1,0 +1,31 @@
+<div class="login-container">
+  <div class="login-card glass-panel">
+    <div class="login-header">
+      <div class="auth-icon">⚖️</div>
+      <h1>Sanctum of Judgment</h1>
+      <p class="subtitle">Only the Supreme Ranker and his chosen Underlings may pass beyond this point.</p>
+    </div>
+
+    @if (errorMessage()) {
+    <div class="error-toast">
+      {{ errorMessage() }}
+    </div>
+    }
+
+    <div class="auth-actions">
+      <button class="login-button google-login" (click)="loginWithGoogle()" [disabled]="isLoading()">
+        @if (isLoading()) {
+        <span class="loader"></span>
+        Verifying...
+        } @else {
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+        Authenticate via Google
+        }
+      </button>
+    </div>
+
+    <div class="login-footer">
+      <p>"All who enter must be judged. All who judge must be authenticated."</p>
+    </div>
+  </div>
+</div>

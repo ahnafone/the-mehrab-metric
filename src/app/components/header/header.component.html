@@ -6,14 +6,28 @@
     <p class="subtitle">Official and Unbiased Rankings. Decided by Mehrab.</p>
 
     <nav class="header-nav">
+      @if (authService.isPrivileged()) {
       <button class="nav-button join-button" (click)="copyInviteLink()">
         <fa-icon [icon]="faInvite"></fa-icon>
         {{ copied() ? 'Link Copied!' : 'Invite a Pleb' }}
       </button>
+      }
+
+      @if (authService.isMehrab()) {
       <a routerLink="/admin" class="nav-button admin-button">
         <fa-icon [icon]="faJudge"></fa-icon>
         Bench of Judgment
       </a>
+      }
+
+      @if (authService.currentUser(); as user) {
+      <div class="user-profile">
+        <img [src]="user.photoURL" [alt]="user.displayName" class="user-avatar">
+        <button class="icon-button logout-button" (click)="logout()" title="Logout">
+          <fa-icon [icon]="faLogout"></fa-icon>
+        </button>
+      </div>
+      }
     </nav>
   </div>
 </header>

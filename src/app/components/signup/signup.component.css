@@ -324,6 +324,12 @@
   font-weight: 600;
 }
 
+.help-text {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
 @media (max-width: 480px) {
   .signup-card {
     padding: 24px;
