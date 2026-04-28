@@ -38,7 +38,8 @@ export class AuthService {
     const email = result.user.email;
 
     // Verify if this person is already recognized in the metric
-    const q = query(collection(this.firestore, 'users'), where('email', '==', email));
+    const usersCollection = collection(this.firestore, 'users');
+    const q = query(usersCollection, where('email', '==', email));
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {

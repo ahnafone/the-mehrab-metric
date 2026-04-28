@@ -16,17 +16,15 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
   `,
   styles: `
     .app-footer {
-      padding: 48px 16px;
+      padding: 16px;
       margin-top: auto;
       display: flex;
       justify-content: center;
     }
 
     .footer-content {
-      padding: 24px 40px;
+      padding: 24px 4rem;
       text-align: center;
-      max-width: 800px;
-      width: 100%;
     }
 
     .footer-text {

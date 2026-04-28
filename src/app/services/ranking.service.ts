@@ -1,9 +1,9 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
-import { Friend, Application, FriendType } from '../models/friend';
+import { Injectable, signal, computed, inject, Signal } from '@angular/core';
+import { Friend, Application, FriendType, friendTypeFromString, friendTypeToString } from '../models/friend';
 import {
   Firestore,
   collection,
-  collectionData,
+  onSnapshot,
   doc,
   setDoc,
   deleteDoc,
@@ -22,16 +22,37 @@ import { Observable, map } from 'rxjs';
 export class RankingService {
   private firestore = inject(Firestore);
 
-  private friendsCollection = collection(this.firestore, 'users');
-  private applicationsCollection = collection(this.firestore, 'applications');
+  private friendsSignal: Signal<Friend[]>;
+  private applicationsSignal: Signal<Application[]>;
 
-  // Friends signal synced with Firestore
-  private friends$ = collectionData(this.friendsCollection, { idField: 'id' }) as Observable<Friend[]>;
-  private friendsSignal = toSignal(this.friends$, { initialValue: [] });
+  constructor() {
+    const friends$ = new Observable<Friend[]>(subscriber => {
+      const q = query(collection(this.firestore, 'users'));
+      return onSnapshot(q, (snapshot) => {
+        const friends = snapshot.docs.map(doc => {
+          const data = doc.data() as any;
+          return {
+            ...data,
+            id: doc.id,
+            friendType: typeof data.friendType === 'string'
+              ? friendTypeFromString(data.friendType)
+              : data.friendType
+          } as Friend;
+        });
+        subscriber.next(friends);
+      }, (error: any) => subscriber.error(error));
+    });
+    this.friendsSignal = toSignal(friends$, { initialValue: [] });
 
-  // Applications signal synced with Firestore
-  private applications$ = collectionData(this.applicationsCollection, { idField: 'id' }) as Observable<Application[]>;
-  private applicationsSignal = toSignal(this.applications$, { initialValue: [] });
+    const apps$ = new Observable<Application[]>(subscriber => {
+      const q = query(collection(this.firestore, 'applications'));
+      return onSnapshot(q, (snapshot) => {
+        const apps = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Application));
+        subscriber.next(apps);
+      }, (error: any) => subscriber.error(error));
+    });
+    this.applicationsSignal = toSignal(apps$, { initialValue: [] });
+  }
 
   public sortedFriends = computed(() => {
     return [...this.friendsSignal()].sort((a, b) => b.score - a.score);
@@ -63,12 +84,12 @@ export class RankingService {
     await this.snapshotRanks();
     const app = this.applicationsSignal().find(a => a.id === appId);
     if (app) {
-      const newFriend: Omit<Friend, 'id'> = {
+      const newFriend = {
         name: app.name,
         email: app.email,
         score: score,
         reasoning: reasoning,
-        friendType: FriendType.Plebeians,
+        friendType: friendTypeToString(FriendType.Plebeians),
         avatarUrl: app.avatarUrl,
         merits: app.merits,
         joinedAt: Timestamp.now()
@@ -86,7 +107,13 @@ export class RankingService {
   public async updateFriend(id: string, updates: Partial<Friend>) {
     await this.snapshotRanks();
     const friendDoc = doc(this.firestore, `users/${id}`);
-    await updateDoc(friendDoc, updates);
+    
+    const finalUpdates = { ...updates } as any;
+    if (updates.friendType !== undefined) {
+      finalUpdates.friendType = friendTypeToString(updates.friendType);
+    }
+    
+    await updateDoc(friendDoc, finalUpdates);
   }
 
   public async deleteFriend(id: string) {

@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { faChartBar, faGavel, faUserPlus, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faChartBar, faGavel, faUserPlus, faSignOutAlt, faUser, faShareNodes, faRankingStar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AuthService } from '../../services/auth.service';
 
@@ -11,19 +11,38 @@ import { AuthService } from '../../services/auth.service';
   imports: [RouterLink, FontAwesomeModule, CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './header.component.html',
-  styleUrl: './header.component.css'
+  styleUrl: './header.component.css',
+  host: {
+    '(document:click)': 'onDocumentClick($event)'
+  }
 })
 export class HeaderComponent {
   public authService = inject(AuthService);
   faMetrics = faChartBar;
   faJudge = faGavel;
-  faInvite = faUserPlus;
+  faInvite = faShareNodes;
   faLogout = faSignOutAlt;
+  faUser = faUser;
+  faLeaderboard = faRankingStar;
 
   copied = signal(false);
+  isDropdownOpen = signal(false);
+
+  toggleDropdown(event: Event) {
+    event.stopPropagation();
+    this.isDropdownOpen.update(v => !v);
+  }
+
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.user-avatar-container')) {
+      this.isDropdownOpen.set(false);
+    }
+  }
 
   logout() {
     this.authService.logout();
+    this.isDropdownOpen.set(false);
   }
 
   copyInviteLink() {

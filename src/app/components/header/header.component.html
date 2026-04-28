@@ -1,33 +1,60 @@
 <header class="app-header">
-  <div class="header-content glass-panel">
-    <h1 class="title" routerLink="/">
-      {{ currentTitle().prefix }}<span class="text-gradient">{{ currentTitle().name }}</span>{{ currentTitle().suffix }}
-    </h1>
-    <p class="subtitle">Official and Unbiased Rankings. Decided by Mehrab.</p>
+  <div class="container flex justify-center">
+    <div class="flex-1"></div>
 
-    <nav class="header-nav">
-      @if (authService.isPrivileged()) {
-      <button class="nav-button join-button" (click)="copyInviteLink()">
-        <fa-icon [icon]="faInvite"></fa-icon>
-        {{ copied() ? 'Link Copied!' : 'Invite a Pleb' }}
-      </button>
+    <div class="header-content glass-panel mx-auto">
+      <h1 class="title" routerLink="/">
+        {{ currentTitle().prefix }}<span class="text-gradient">{{ currentTitle().name }}</span>{{ currentTitle().suffix
+        }}
+      </h1>
+      <p class="subtitle">Official and Unbiased Rankings. Decided by Mehrab.</p>
+    </div>
+
+    <div class="flex-1 flex justify-end items-center gap-4">
+
+      @if (authService.currentUser(); as user) {
+      <a routerLink="/leaderboard" class="nav-button admin-button">
+        <fa-icon [icon]="faLeaderboard"></fa-icon>
+      </a>
       }
 
       @if (authService.isMehrab()) {
       <a routerLink="/admin" class="nav-button admin-button">
         <fa-icon [icon]="faJudge"></fa-icon>
-        Bench of Judgment
       </a>
       }
 
-      @if (authService.currentUser(); as user) {
-      <div class="user-profile">
-        <img [src]="user.photoURL" [alt]="user.displayName" class="user-avatar">
-        <button class="icon-button logout-button" (click)="logout()" title="Logout">
-          <fa-icon [icon]="faLogout"></fa-icon>
-        </button>
+      @if (authService.isPrivileged()) {
+      <div class="nav-button join-button" (click)="copyInviteLink()">
+        <fa-icon [icon]="faInvite"></fa-icon>
       </div>
       }
-    </nav>
+
+      @if (authService.currentUser(); as user) {
+      <div class="user-avatar-container">
+        <button class="avatar-button" (click)="toggleDropdown($event)" title="User Menu">
+          <img [src]="authService.currentProfile()?.avatarUrl" [alt]="user.displayName ?? ''" class="avatar-img">
+        </button>
+
+        @if (isDropdownOpen()) {
+        <div class="dropdown-menu glass-panel">
+          <div class="dropdown-header">
+            <span class="user-name">{{ user.displayName }}</span>
+            <span class="user-email">{{ user.email }}</span>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a routerLink="/profile" class="dropdown-item" (click)="isDropdownOpen.set(false)">
+            <fa-icon [icon]="faUser"></fa-icon>
+            <span>User Profile</span>
+          </a>
+          <button class="dropdown-item logout-item" (click)="logout()">
+            <fa-icon [icon]="faLogout"></fa-icon>
+            <span>Logout</span>
+          </button>
+        </div>
+        }
+      </div>
+      }
+    </div>
   </div>
 </header>

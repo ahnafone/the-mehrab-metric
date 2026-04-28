@@ -1,0 +1,134 @@
+<div class="flex justify-center">
+  <div class="profile-container container">
+    @if (user(); as fbUser) {
+    <div class="profile-layout">
+      <!-- Sidebar / Info Card -->
+      <aside class="profile-sidebar glass-panel">
+        <div class="avatar-section">
+          <div class="avatar-wrapper">
+            <img [src]="profile()?.avatarUrl || fbUser.photoURL" [alt]="fbUser.displayName" class="profile-avatar">
+
+          </div>
+          <h1 class="user-name">{{ profile()?.name || fbUser.displayName }}</h1>
+          <p class="user-email">
+            <fa-icon [icon]="faEnvelope"></fa-icon>
+            {{ fbUser.email }}
+          </p>
+          <div class="status-badge" [class.ranked]="status() === 'RANKED'" [class.pending]="status() === 'PENDING'"
+            [class.unranked]="status() === 'UNRANKED'">
+            <fa-icon [icon]="status() === 'RANKED' ? faCheck : faClock"></fa-icon>
+            {{ status() }}
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          @if (profile(); as p) {
+          <div class="stat-card">
+            <span class="stat-label">Meh Score</span>
+            <span class="stat-value text-gradient">{{ p.score }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Global Rank</span>
+            <span class="stat-value">#{{ rank() }} / {{ totalRanked() }}</span>
+          </div>
+          } @else if (pendingApplication(); as app) {
+          <div class="stat-card full-width pending-card">
+            <span class="stat-label">Status</span>
+            <span class="stat-value">Judgment Pending</span>
+          </div>
+          }
+        </div>
+
+        <div class="profile-info-list">
+          <div class="info-item">
+            <fa-icon [icon]="faShield"></fa-icon>
+            <span>{{ profile()?.friendType !== undefined ? (profile()?.friendType === 0 ? 'Supreme Leader' : 'Official
+              Friend') : 'Guest Account' }}</span>
+          </div>
+          <div class="info-item">
+            <fa-icon [icon]="faCalendar"></fa-icon>
+            <span>Member since {{ toDate(profile()?.joinedAt) | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="profile-main">
+        @if (profile(); as p) {
+        <!-- The Verdict -->
+        <section class="content-card glass-panel">
+          <h2 class="section-title">
+            <fa-icon [icon]="faTrophy"></fa-icon>
+            The Official Verdict
+          </h2>
+          <div class="verdict-box">
+            <p class="verdict-text">"{{ p.reasoning }}"</p>
+            <div class="verdict-meta">
+              <span class="verdict-date">Admitted on {{ toDate(p.joinedAt) | date:'longDate' }}</span>
+              <span class="badge">{{ p.friendType === 0 ? 'MEHRAB' : (p.friendType === 1 ? 'UNDERLING' : 'PLEBEIAN')
+                }}</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Merits -->
+        <section class="content-card glass-panel">
+          <h2 class="section-title">
+            <fa-icon [icon]="faAward"></fa-icon>
+            Merits & Credentials
+          </h2>
+          @if (p.merits?.length) {
+          <div class="merits-list">
+            @for (merit of p.merits; track $index) {
+            <a [href]="merit.link" target="_blank" class="merit-item">
+              <div class="merit-icon">
+                <fa-icon [icon]="faAward"></fa-icon>
+              </div>
+              <div class="merit-info">
+                <span class="merit-title">{{ merit.title }}</span>
+                <span class="merit-link">{{ merit.link }}</span>
+              </div>
+              <fa-icon [icon]="faChevron" class="chevron-icon"></fa-icon>
+            </a>
+            }
+          </div>
+          } @else {
+          <p class="empty-state">No documented merits. Truly a plebeian existence.</p>
+          }
+        </section>
+        } @else if (pendingApplication(); as app) {
+        <section class="content-card glass-panel empty-center">
+          <div class="empty-content">
+            <div class="icon-circle">
+              <fa-icon [icon]="faClock"></fa-icon>
+            </div>
+            <h2>Judgment in Progress</h2>
+            <p>Your application was submitted on {{ toDate(app.submittedAt) | date:'longDate' }}. Mehrab is currently
+              weighing
+              your soul against the Metric.</p>
+          </div>
+        </section>
+        } @else {
+        <section class="content-card glass-panel empty-center">
+          <div class="empty-content">
+            <div class="icon-circle">
+              <fa-icon [icon]="faInfo"></fa-icon>
+            </div>
+            <h2>Not Yet Ranked</h2>
+            <p>You have not yet submitted an application to the Mehrab Metric. Your existence is currently undocumented
+              by
+              the Supreme Ranker.</p>
+            <button routerLink="/signup" class="apply-button">Apply for Recognition</button>
+          </div>
+        </section>
+        }
+      </main>
+    </div>
+    } @else {
+    <div class="login-prompt glass-panel">
+      <h2>Please login to view your profile</h2>
+      <button routerLink="/login" class="apply-button">Login</button>
+    </div>
+    }
+  </div>
+</div>

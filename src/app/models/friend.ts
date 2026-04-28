@@ -5,7 +5,26 @@ export interface Merit {
   link: string;
 }
 
-export enum FriendType { "Mehrab", "Underlings", "Plebeians" }
+export enum FriendType { Mehrab, Underlings, Plebeians }
+
+export function friendTypeFromString(s: string): FriendType {
+  switch (s) {
+    case 'Mehrab': return FriendType.Mehrab;
+    case 'Underlings': return FriendType.Underlings;
+    case 'Plebeians': return FriendType.Plebeians;
+    default:
+      throw new Error(`Invalid friend type: ${s}`);
+  }
+}
+export function friendTypeToString(t: FriendType): string {
+  switch (t) {
+    case FriendType.Mehrab: return 'Mehrab';
+    case FriendType.Underlings: return 'Underlings';
+    case FriendType.Plebeians: return 'Plebeians';
+    default:
+      throw new Error(`Invalid friend type: ${t}`);
+  }
+}
 
 export interface Friend {
   id: string;
