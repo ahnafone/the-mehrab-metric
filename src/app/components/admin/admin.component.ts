@@ -5,16 +5,20 @@ import { Router, RouterLink } from '@angular/router';
 import { RankingService } from '../../services/ranking.service';
 import { AuthService } from '../../services/auth.service';
 import { Friend, Application, FriendType } from '../../models/friend';
+import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FontAwesomeModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
 })
 export class AdminComponent {
+  faBack = faChevronLeft;
+
   private rankingService = inject(RankingService);
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);

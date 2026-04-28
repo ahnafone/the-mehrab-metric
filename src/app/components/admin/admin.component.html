@@ -1,5 +1,6 @@
 <div class="back-to-leaderboard">
-  <a routerLink="/" class="admin-back-link">← Back to Leaderboard</a>
+  <a routerLink="/" class="admin-back-link">
+    <fa-icon [icon]="faBack"></fa-icon> Back to Leaderboard</a>
 </div>
 
 <div class="admin-layout">
@@ -101,7 +102,7 @@
           <div class="action-buttons">
             <button type="submit" class="submit-button update">Update Rank</button>
             @if (canExile()) {
-              <button type="button" (click)="onDeleteFriend(selectedFriend()!)" class="delete-button">Exile</button>
+            <button type="button" (click)="onDeleteFriend(selectedFriend()!)" class="delete-button">Exile</button>
             }
           </div>
         </form>

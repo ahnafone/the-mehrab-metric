@@ -9,7 +9,8 @@ export const friendsSignal = signal<Friend[]>([
         friendType: FriendType.Mehrab,
         reasoning: 'Ekta thabbor marmu',
         avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mehrab&backgroundColor=b6e3f4',
-        joinedAt: new Date('2024-01-01')
+        joinedAt: new Date('2024-01-01'),
+        email: '[EMAIL_ADDRESS]'
     },
     {
         id: '2',
@@ -18,7 +19,8 @@ export const friendsSignal = signal<Friend[]>([
         score: 1.32,
         reasoning: 'Always brings snacks to the LAN party. Solid performance.',
         avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex&backgroundColor=c0aede',
-        joinedAt: new Date('2024-01-05')
+        joinedAt: new Date('2024-01-05'),
+        email: '[EMAIL_ADDRESS]'
     },
     {
         id: '3',
@@ -27,7 +29,8 @@ export const friendsSignal = signal<Friend[]>([
         score: 1.72,
         reasoning: 'Decent memes, but sometimes replies with "K".',
         avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sam&backgroundColor=ffdfbf',
-        joinedAt: new Date('2024-02-10')
+        joinedAt: new Date('2024-02-10'),
+        email: '[EMAIL_ADDRESS]'
     },
     {
         id: '4',
@@ -36,16 +39,18 @@ export const friendsSignal = signal<Friend[]>([
         score: 0.4,
         reasoning: 'Still owes me $5 from 2021. Points deducted.',
         avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan&backgroundColor=ffd5dc',
-        joinedAt: new Date('2024-02-15')
+        joinedAt: new Date('2024-02-15'),
+        email: '[EMAIL_ADDRESS]'
     },
     {
         id: '5',
         name: 'Ishmam',
-        friendType: FriendType.Underlings,
+        friendType: FriendType.Ishmam,
         score: 0.0,
         reasoning: 'Has yellow teeth.',
         avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Taylor&backgroundColor=d1d4f9',
-        joinedAt: new Date('2024-03-01')
+        joinedAt: new Date('2024-03-01'),
+        email: '[EMAIL_ADDRESS]'
     }
 ]);
 

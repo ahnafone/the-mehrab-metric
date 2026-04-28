@@ -9,7 +9,8 @@ service cloud.firestore {
     // Helper function to check if the user is Mehrab
     function isMehrab() {
       return request.auth != null && 
-             get(/databases/$(database)/documents/friends/$(request.auth.token.email)).data.friendType == "Mehrab";
+             get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.email == request.auth.token.email &&
+             get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.friendType == "Mehrab";
     }
 
     match /users/{id} {

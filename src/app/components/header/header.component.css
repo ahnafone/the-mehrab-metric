@@ -43,13 +43,23 @@
   text-decoration: none;
   transition:
     transform 0.2s,
-    opacity 0.2s;
+    opacity 0.2s,
+    background 0.2s,
+    border-color 0.2s;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   line-height: 1.5;
   gap: 8px;
+  height: 42px; /* Consistent height */
+}
+
+.icon-nav-button {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 14px;
 }
 
 .nav-button fa-icon {
@@ -61,11 +71,58 @@
   color: white;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
   border: none;
+  position: relative;
 }
 
 .join-button:hover {
   transform: translateY(-2px);
   opacity: 0.9;
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+}
+
+.join-button.copied {
+  background: #22c55e;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.copy-tooltip {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #22c55e;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: tooltipFadeIn 0.2s ease-out;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.copy-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: #22c55e transparent transparent transparent;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 .admin-button {
@@ -78,6 +135,7 @@
   background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
   transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .login-link {
