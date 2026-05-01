@@ -1,4 +1,3 @@
-import { AuthService } from './../../services/auth.service';
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { RankingService } from '../../services/ranking.service';
 import { Friend } from '../../models/friend';

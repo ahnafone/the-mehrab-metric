@@ -27,27 +27,20 @@ export class RankingService {
   private applicationsSignal: Signal<Application[]>;
 
   constructor() {
-    // Wait for auth state before subscribing to Firestore.
-    // Firestore rules require authentication, so listeners started
-    // before auth is ready get permission-denied errors and never recover.
+    // Fetch public friends list immediately.
+    // Applications still wait for auth state since they require admin access.
     const authUser$ = user(this.auth);
 
-    const friends$ = authUser$.pipe(
-      switchMap(u => {
-        if (!u) return of([] as Friend[]);
-        const q = query(collection(this.firestore, 'friends'));
-        return (collectionData(q, { idField: 'id' }) as Observable<any[]>).pipe(
-          map(friends => friends.map(data => ({
-            ...data,
-            // Migrate: read `points` with fallback to legacy `score`
-            points: data.points ?? data.score ?? 0,
-            friendType: typeof data.friendType === 'string'
-              ? friendTypeFromString(data.friendType)
-              : data.friendType,
-            joinedAt: data.joinedAt instanceof Timestamp ? data.joinedAt.toDate() : data.joinedAt
-          } as Friend)))
-        );
-      })
+    const friends$ = (collectionData(query(collection(this.firestore, 'friends')), { idField: 'id' }) as Observable<any[]>).pipe(
+      map(friends => friends.map(data => ({
+        ...data,
+        // Migrate: read `points` with fallback to legacy `score`
+        points: data.points ?? data.score ?? 0,
+        friendType: typeof data.friendType === 'string'
+          ? friendTypeFromString(data.friendType)
+          : data.friendType,
+        joinedAt: data.joinedAt instanceof Timestamp ? data.joinedAt.toDate() : data.joinedAt
+      } as Friend)))
     );
     this.friendsSignal = toSignal(friends$, { initialValue: [] });
 
@@ -107,7 +100,7 @@ export class RankingService {
     await setDoc(appDoc, newApp);
   }
 
-  public async judgeApplication(appId: string, points: number, reasoning: string) {
+  public async judgeApplication(appId: string, points: number, reasoning: string, answers: any) {
     await this.snapshotRanks();
     const app = this.applicationsSignal().find(a => a.id === appId);
     if (app) {
@@ -119,6 +112,7 @@ export class RankingService {
         friendType: friendTypeToString(FriendType.Plebeians),
         avatarUrl: app.avatarUrl,
         merits: app.merits,
+        answers: answers,
         joinedAt: Timestamp.now()
       };
 

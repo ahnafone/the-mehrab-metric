@@ -13,8 +13,8 @@ service cloud.firestore {
     }
 
     match /friends/{uid} {
-      // Any authenticated user can read the leaderboard
-      allow read: if request.auth != null;
+      // Any one can read the leaderboard
+      allow read: if true;
       
       // Only Mehrab can create new friends (via judgment)
       allow create: if isMehrab();

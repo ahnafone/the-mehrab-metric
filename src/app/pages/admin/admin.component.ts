@@ -1,10 +1,11 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, FormGroup, FormControl } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { RankingService } from '../../services/ranking.service';
 import { AuthService } from '../../services/auth.service';
 import { Friend, Application, FriendType } from '../../models/friend';
+import { SUCCESS_SCORE_QUESTIONS, Question, QuestionOption } from '../signup/signup.component';
 import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
@@ -24,11 +25,14 @@ export class AdminComponent {
   public rankingService = inject(RankingService);
   private authService = inject(AuthService);
 
+  questions = SUCCESS_SCORE_QUESTIONS;
+
   applications = this.rankingService.applications;
   friends = this.rankingService.sortedFriends;
 
   selectedApplication = signal<Application | null>(null);
   selectedFriend = signal<Friend | null>(null);
+  expandedQuestions = signal<Record<string, boolean>>({});
 
   canExile = computed(() => {
     const friend = this.selectedFriend();
@@ -38,13 +42,15 @@ export class AdminComponent {
   });
 
   judgeForm = this.fb.group({
-    points: [500, [Validators.required, Validators.min(0), Validators.max(100000)]],
-    reasoning: ['', Validators.required]
+    points: [{ value: 500, disabled: true }, [Validators.required, Validators.min(0), Validators.max(100000)]],
+    reasoning: ['', Validators.required],
+    answers: this.fb.group({})
   });
 
   editForm = this.fb.group({
-    points: [0, [Validators.required, Validators.min(0), Validators.max(100000)]],
-    reasoning: ['', Validators.required]
+    points: [{ value: 0, disabled: true }, [Validators.required, Validators.min(0), Validators.max(100000)]],
+    reasoning: ['', Validators.required],
+    answers: this.fb.group({})
   });
 
   /** Live Meh preview for the judge form */
@@ -59,39 +65,113 @@ export class AdminComponent {
     return this.rankingService.toMeh(pts);
   });
 
+  private buildAnswersForm(initialAnswers: any = null): FormGroup {
+    const group: any = {};
+    for (const q of this.questions) {
+      if (q.type === 'single') {
+        group[q.id] = new FormControl(initialAnswers?.[q.id] || q.options[0].label);
+      } else {
+        const optionControls: any = {};
+        q.options.forEach(opt => {
+          optionControls[opt.label] = new FormControl(initialAnswers?.[q.id]?.[opt.label] || false);
+        });
+        group[q.id] = new FormGroup(optionControls);
+      }
+    }
+    return new FormGroup(group);
+  }
+
+  private calculateScore(answers: any, targetForm: FormGroup) {
+    if (!answers) return;
+    let score = 0;
+    for (const q of this.questions) {
+      const answer = answers[q.id];
+      if (!answer) continue;
+
+      if (q.type === 'single') {
+        const option = q.options.find(o => o.label === answer);
+        if (option) {
+          score += option.points;
+        }
+      } else if (q.type === 'multiple') {
+        for (const opt of q.options) {
+          if (answer[opt.label] === true) {
+            score += opt.points;
+          }
+        }
+      }
+    }
+    targetForm.get('points')?.setValue(score, { emitEvent: false });
+  }
+
   selectApplication(app: Application) {
     this.selectedApplication.set(app);
     this.selectedFriend.set(null);
+
+    const answersGroup = this.buildAnswersForm(app.answers);
+    this.judgeForm.setControl('answers', answersGroup);
+
+    answersGroup.valueChanges.subscribe(values => {
+      this.calculateScore(values, this.judgeForm);
+    });
+
     this.judgeForm.patchValue({
-      points: 500,
+      points: app.score ?? 500,
       reasoning: app.reasoning
     });
+
+    // Reset expanded states when selecting a new application
+    this.expandedQuestions.set({});
+  }
+
+  toggleQuestion(id: string) {
+    this.expandedQuestions.update(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  }
+
+  getSelectedAnswer(question: Question): string {
+    const activeForm = this.selectedApplication() ? this.judgeForm : this.editForm;
+    const control = activeForm.get(['answers', question.id]);
+    if (!control) return 'None';
+
+    if (question.type === 'single') {
+      return control.value || 'None';
+    } else {
+      const val = control.value;
+      if (!val) return 'None';
+      const selected = Object.keys(val).filter(k => val[k]);
+      return selected.length > 0 ? selected.join(', ') : 'None';
+    }
   }
 
   selectFriend(friend: Friend) {
     this.selectedFriend.set(friend);
     this.selectedApplication.set(null);
 
-    const isFixed = friend.name.toLowerCase() === 'mehrab';
+    const answersGroup = this.buildAnswersForm(friend.answers);
+    this.editForm.setControl('answers', answersGroup);
+
+    answersGroup.valueChanges.subscribe(values => {
+      this.calculateScore(values, this.editForm);
+    });
 
     this.editForm.patchValue({
       points: friend.points,
       reasoning: friend.reasoning
     });
 
-    if (isFixed) {
-      this.editForm.get('points')?.disable();
-    } else {
-      this.editForm.get('points')?.enable();
-    }
+    // Reset expanded states
+    this.expandedQuestions.set({});
   }
 
   async onJudge() {
     const app = this.selectedApplication();
     if (app && this.judgeForm.valid) {
-      const { points, reasoning } = this.judgeForm.getRawValue();
+      const { points, reasoning, answers } = this.judgeForm.getRawValue();
       try {
-        await this.rankingService.judgeApplication(app.id, points!, reasoning!);
+        await this.rankingService.judgeApplication(app.id, points!, reasoning!, answers);
         this.selectedApplication.set(null);
         this.judgeForm.reset({ points: 500, reasoning: '' });
       } catch (error) {
@@ -103,11 +183,12 @@ export class AdminComponent {
   async onUpdateFriend() {
     const friend = this.selectedFriend();
     if (friend && this.editForm.valid) {
-      const { points, reasoning } = this.editForm.getRawValue();
+      const { points, reasoning, answers } = this.editForm.getRawValue();
       try {
         await this.rankingService.updateFriend(friend.id, {
           points: points!,
-          reasoning: reasoning!
+          reasoning: reasoning!,
+          answers: answers
         });
         this.selectedFriend.set(null);
         this.editForm.reset();
