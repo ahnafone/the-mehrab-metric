@@ -63,6 +63,8 @@ export const applicationsSignal = signal<Application[]>([
         merits: [
             { title: 'Keyboard Collection', link: 'https://example.com/keyboards' }
         ],
+        score: 150,
+        answers: {},
         submittedAt: new Date(),
         email: 'orchit@example.com'
     }

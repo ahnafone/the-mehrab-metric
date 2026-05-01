@@ -1,7 +1,6 @@
 Success Score Calculator
 
 1. Education
-   Highest level only.
 
 High school / GED: +25
 Some college: +50
@@ -75,11 +74,14 @@ Single: 0
 In relationship: +100
 Long-term relationship: +200
 Engaged: +250
-Married: +300
+Married with one wife (or partner): +300
+Married with 2-3 wives: +400
+Married with 4+ wives: +500
 Married 5+ years: +400
 Married 10+ years: +500
-Has children: +150
-Married with children: +500 total instead of adding both separately
+Has children (not married): -150
+Married with children from one partner: +400
+Married with children from multiple partners: -500
 
 This keeps it simple and avoids over-rewarding stacking.
 
@@ -195,6 +197,18 @@ Visited 25+ countries: +800
 Visited 50+ countries: +1500
 Lived in another country: +300
 Lived in 3+ countries: +700
+
+14. Physical Attributes (Dick Size)
+
+Under 1" (Micropenis): -1000
+1" to 3" (Extremely Small): -500
+3" to 4" (Very Small): -200
+4" to 5" (Below Average): 0
+5" to 6" (Average): +100
+6" to 7" (Damn): +300
+7" to 8" (Gaddayyum): +800
+8" to 9" (Horry SHEIT): +1500
+9"+ (MashAllah): +3000
 
 Simplified Score Tiers
 

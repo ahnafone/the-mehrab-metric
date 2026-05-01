@@ -48,5 +48,7 @@ export interface Application {
   reasoning: string;
   avatarUrl: string;
   merits: Merit[];
+  score: number;
+  answers: any;
   submittedAt: Date | Timestamp | any;
 }
