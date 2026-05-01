@@ -32,7 +32,7 @@ export interface Friend {
   id: string;
   name: string;
   email: string;
-  score: number; // in Meh
+  points: number; // raw score from the rubric
   reasoning: string;
   avatarUrl: string;
   merits?: Merit[];

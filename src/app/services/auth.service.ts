@@ -1,6 +1,6 @@
 import { Injectable, inject, computed } from '@angular/core';
-import { Auth, user, signOut, GoogleAuthProvider, signInWithPopup } from '@angular/fire/auth';
-import { Firestore, collection, query, where, getDocs } from '@angular/fire/firestore';
+import { Auth, user, signOut, GoogleAuthProvider, signInWithPopup, UserCredential } from '@angular/fire/auth';
+import { doc, Firestore, getDoc } from '@angular/fire/firestore';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RankingService } from './ranking.service';
 import { FriendType } from '../models/friend';
@@ -32,24 +32,31 @@ export class AuthService {
     return profile?.friendType === FriendType.Mehrab || profile?.friendType === FriendType.Underlings;
   });
 
-  async loginWithGoogle() {
-    const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(this.auth, provider);
-    const email = result.user.email;
-
-    // Verify if this person is already recognized in the metric
-    const usersCollection = collection(this.firestore, 'users');
-    const q = query(usersCollection, where('email', '==', email));
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      // If not found in friends, check if they are the Supreme Ranker (override)
-      // For now, we strictly require a friend record for any login.
-      await signOut(this.auth);
-      throw new Error('Access Denied. You have no standing in the Mehrab Metric.');
+  async loginWithGoogle(): Promise<{ authResult?: UserCredential, status: "success" | "access_denied" | "error" | "already_signed_in" }> {
+    if (this.auth.currentUser) {
+      return { status: "already_signed_in" };
     }
 
-    return result;
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(this.auth, provider);
+
+      // Verify if this person is already recognized in the metric
+      const docReference = doc(this.firestore, 'friends/' + result.user.uid);
+      const docSnapshot = await getDoc(docReference);
+
+      if (!docSnapshot.exists()) {
+        // If not found in friends, check if they are the Supreme Ranker (override)
+        // For now, we strictly require a friend record for any login.
+        await signOut(this.auth);
+        return { status: "access_denied" };
+      }
+
+      return { authResult: result, status: 'success' };
+    } catch (error) {
+      console.error('Login error:', error);
+      return { status: 'error' };
+    }
   }
 
   async logout() {

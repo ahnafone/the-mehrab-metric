@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { faChartBar, faGavel, faUserPlus, faSignOutAlt, faUser, faShareNodes, faRankingStar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AuthService } from '../../services/auth.service';
@@ -17,6 +17,7 @@ import { AuthService } from '../../services/auth.service';
   }
 })
 export class HeaderComponent {
+  private router = inject(Router);
   public authService = inject(AuthService);
   faMetrics = faChartBar;
   faJudge = faGavel;
@@ -40,9 +41,10 @@ export class HeaderComponent {
     }
   }
 
-  logout() {
-    this.authService.logout();
+  async logout() {
+    await this.authService.logout();
     this.isDropdownOpen.set(false);
+    this.router.navigate(['/login']);
   }
 
   copyInviteLink() {

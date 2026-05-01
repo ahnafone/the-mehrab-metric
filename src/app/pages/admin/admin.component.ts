@@ -19,10 +19,10 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 export class AdminComponent {
   faBack = faChevronLeft;
 
-  private rankingService = inject(RankingService);
-  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
   private router = inject(Router);
+  public rankingService = inject(RankingService);
+  private authService = inject(AuthService);
 
   applications = this.rankingService.applications;
   friends = this.rankingService.sortedFriends;
@@ -38,20 +38,32 @@ export class AdminComponent {
   });
 
   judgeForm = this.fb.group({
-    score: [0.5, [Validators.required, Validators.min(0), Validators.max(10)]],
+    points: [500, [Validators.required, Validators.min(0), Validators.max(100000)]],
     reasoning: ['', Validators.required]
   });
 
   editForm = this.fb.group({
-    score: [0, [Validators.required, Validators.min(0), Validators.max(10)]],
+    points: [0, [Validators.required, Validators.min(0), Validators.max(100000)]],
     reasoning: ['', Validators.required]
+  });
+
+  /** Live Meh preview for the judge form */
+  judgeMehPreview = computed(() => {
+    const pts = this.judgeForm.get('points')?.value ?? 0;
+    return this.rankingService.toMeh(pts);
+  });
+
+  /** Live Meh preview for the edit form */
+  editMehPreview = computed(() => {
+    const pts = this.editForm.get('points')?.value ?? 0;
+    return this.rankingService.toMeh(pts);
   });
 
   selectApplication(app: Application) {
     this.selectedApplication.set(app);
     this.selectedFriend.set(null);
     this.judgeForm.patchValue({
-      score: 0.5,
+      points: 500,
       reasoning: app.reasoning
     });
   }
@@ -63,25 +75,25 @@ export class AdminComponent {
     const isFixed = friend.name.toLowerCase() === 'mehrab' || friend.name.toLowerCase() === 'ishmam';
 
     this.editForm.patchValue({
-      score: friend.score,
+      points: friend.points,
       reasoning: friend.reasoning
     });
 
     if (isFixed) {
-      this.editForm.get('score')?.disable();
+      this.editForm.get('points')?.disable();
     } else {
-      this.editForm.get('score')?.enable();
+      this.editForm.get('points')?.enable();
     }
   }
 
   async onJudge() {
     const app = this.selectedApplication();
     if (app && this.judgeForm.valid) {
-      const { score, reasoning } = this.judgeForm.getRawValue();
+      const { points, reasoning } = this.judgeForm.getRawValue();
       try {
-        await this.rankingService.judgeApplication(app.id, score!, reasoning!);
+        await this.rankingService.judgeApplication(app.id, points!, reasoning!);
         this.selectedApplication.set(null);
-        this.judgeForm.reset({ score: 0.5, reasoning: '' });
+        this.judgeForm.reset({ points: 500, reasoning: '' });
       } catch (error) {
         console.error('Judgment failed:', error);
       }
@@ -91,10 +103,10 @@ export class AdminComponent {
   async onUpdateFriend() {
     const friend = this.selectedFriend();
     if (friend && this.editForm.valid) {
-      const { score, reasoning } = this.editForm.getRawValue();
+      const { points, reasoning } = this.editForm.getRawValue();
       try {
         await this.rankingService.updateFriend(friend.id, {
-          score: score!,
+          points: points!,
           reasoning: reasoning!
         });
         this.selectedFriend.set(null);

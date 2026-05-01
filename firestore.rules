@@ -9,11 +9,10 @@ service cloud.firestore {
     // Helper function to check if the user is Mehrab
     function isMehrab() {
       return request.auth != null && 
-             get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.email == request.auth.token.email &&
-             get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.friendType == "Mehrab";
+             get(/databases/$(database)/documents/friends/$(request.auth.uid)).data.friendType == "Mehrab";
     }
 
-    match /users/{id} {
+    match /friends/{uid} {
       // Any authenticated user can read the leaderboard
       allow read: if request.auth != null;
       
@@ -21,7 +20,7 @@ service cloud.firestore {
       allow create: if isMehrab();
       
       // User can update their own profile, or Mehrab can update anyone
-      allow update: if isMehrab() || (request.auth != null && email == request.auth.token.email);
+      allow update: if isMehrab() || (request.auth != null && uid == request.auth.uid);
       
       // Only Mehrab can exile (delete) subjects
       allow delete: if isMehrab();

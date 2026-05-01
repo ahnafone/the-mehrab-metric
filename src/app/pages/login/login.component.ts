@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -18,18 +18,28 @@ export class LoginComponent {
   isLoading = signal(false);
   errorMessage = signal('');
 
+  constructor() {
+    effect(() => {
+      if (this.authService.currentUser()) {
+        this.router.navigate(['/']);
+      }
+    });
+  }
+
   async loginWithGoogle() {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    try {
-      await this.authService.loginWithGoogle();
-      this.router.navigate(['/']);
-    } catch (error: any) {
-      console.error('Login failed:', error);
+    const result = await this.authService.loginWithGoogle();
+
+    if (result.status === 'success') {
+      // The effect handles the redirect automatically when currentUser signal updates
+    } else if (result.status === 'access_denied') {
+      this.errorMessage.set('Access Denied. You have no standing in the Mehrab Metric.');
+    } else {
       this.errorMessage.set('Identity verification failed. Are you truly who you say you are?');
-    } finally {
-      this.isLoading.set(false);
     }
+
+    this.isLoading.set(false);
   }
 }

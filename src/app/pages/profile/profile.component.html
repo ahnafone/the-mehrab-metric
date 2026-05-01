@@ -25,7 +25,11 @@
           @if (profile(); as p) {
           <div class="stat-card">
             <span class="stat-label">Meh Score</span>
-            <span class="stat-value text-gradient">{{ p.score }}</span>
+            <span class="stat-value text-gradient">{{ mehScore() }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Raw Points</span>
+            <span class="stat-value">{{ p.points | number }}</span>
           </div>
           <div class="stat-card">
             <span class="stat-label">Global Rank</span>

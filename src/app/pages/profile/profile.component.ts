@@ -64,6 +64,12 @@ export class ProfileComponent {
 
   totalRanked = computed(() => this.rankingService.sortedFriends().length);
 
+  mehScore = computed(() => {
+    const p = this.profile();
+    if (!p) return 0;
+    return this.rankingService.toMeh(p.points);
+  });
+
   status = computed(() => {
     if (this.profile()) return 'RANKED';
     if (this.pendingApplication()) return 'PENDING';

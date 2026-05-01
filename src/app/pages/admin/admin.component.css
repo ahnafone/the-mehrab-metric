@@ -255,6 +255,17 @@
   margin-top: 4px;
 }
 
+.meh-preview {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #818cf8;
+  background: rgba(99, 102, 241, 0.1);
+  padding: 4px 12px;
+  border-radius: 8px;
+  width: fit-content;
+  letter-spacing: 0.02em;
+}
+
 .textarea {
   resize: none;
 }

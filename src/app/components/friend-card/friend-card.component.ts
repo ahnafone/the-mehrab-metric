@@ -1,9 +1,11 @@
 import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { Friend } from '../../models/friend';
 
 @Component({
   selector: 'app-friend-card',
   standalone: true,
+  imports: [DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div 
@@ -51,9 +53,12 @@ import { Friend } from '../../models/friend';
               <span class="special-tag favorite">GOLDEN CHILD</span>
             }
           </div>
-          <div class="score-badge">
-            <span class="score-value">{{ friend().score }}</span>
-            <span class="score-label">Meh</span>
+          <div class="score-container">
+            <div class="score-badge">
+              <span class="score-value">{{ mehScore() }}</span>
+              <span class="score-label">Meh</span>
+            </div>
+            <span class="points-label">{{ friend().points | number }} pts</span>
           </div>
         </div>
         
@@ -399,6 +404,13 @@ import { Friend } from '../../models/friend';
       align-items: flex-start;
     }
 
+    .score-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
     .name {
       font-family: var(--font-display);
       font-size: 1.5rem;
@@ -430,6 +442,14 @@ import { Friend } from '../../models/friend';
       color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
+    }
+
+    .points-label {
+      font-size: 0.6875rem;
+      color: var(--text-secondary);
+      opacity: 0.7;
+      text-align: right;
+      margin-top: 2px;
     }
 
     .reasoning-container {
@@ -484,6 +504,7 @@ import { Friend } from '../../models/friend';
 export class FriendCardComponent {
   friend = input.required<Friend>();
   rank = input.required<number>();
+  mehScore = input.required<number>();
 
   isMehrab = computed(() => this.friend().name.toLowerCase() === 'mehrab');
   isIshmam = computed(() => this.friend().name.toLowerCase() === 'ishmam');

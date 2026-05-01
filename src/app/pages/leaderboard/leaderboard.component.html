@@ -1,0 +1,72 @@
+<div class="leaderboard-wrapper" [class.has-selection]="selectedFriend()">
+  <div class="leaderboard-container">
+    <div class="friends-list">
+      @for (friend of rankingService.sortedFriends(); track friend.id) {
+        <app-friend-card
+          [friend]="friend"
+          [rank]="$index + 1"
+          [mehScore]="rankingService.toMeh(friend.points)"
+          (click)="selectFriend(friend)"
+          [class.active]="selectedFriend()?.id === friend.id"
+        />
+      }
+    </div>
+  </div>
+
+  @if (selectedFriend(); as friend) {
+    <aside class="details-panel glass-panel">
+      <button class="close-button" (click)="closeDetails()">×</button>
+
+      <div class="details-header">
+        <img [src]="friend.avatarUrl" [alt]="friend.name" class="details-avatar">
+        <div class="details-title-row">
+          <h2 class="details-name">{{ friend.name }}</h2>
+          <div class="details-score">
+            <span class="value">{{ rankingService.toMeh(friend.points) }}</span>
+            <span class="unit">Meh</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="details-content">
+        <section class="details-section">
+          <h3>Raw Points</h3>
+          <p class="details-points">{{ friend.points | number }} points</p>
+        </section>
+
+        <section class="details-section">
+          <h3>The Verdict</h3>
+          <p class="details-reasoning">"{{ friend.reasoning }}"</p>
+        </section>
+
+        @if (friend.merits?.length) {
+          <section class="details-section">
+            <h3>Merits &amp; Credentials</h3>
+            <div class="merits-grid">
+              @for (merit of friend.merits; track $index) {
+                <a [href]="merit.link" target="_blank" class="merit-item">
+                  <span class="merit-icon">✦</span>
+                  <span class="merit-text">{{ merit.title }}</span>
+                  <span class="external-link">↗</span>
+                </a>
+              }
+            </div>
+          </section>
+        }
+
+        <section class="details-section">
+          <h3>Status History</h3>
+          <div class="history-timeline">
+            <div class="timeline-item">
+              <span class="timeline-dot"></span>
+              <div class="timeline-info">
+                <span class="timeline-status">Officially Ranked</span>
+                <span class="timeline-date">Admitted to the Metric on {{ friend.joinedAt | date:'longDate' }}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </aside>
+  }
+</div>

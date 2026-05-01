@@ -58,11 +58,12 @@
 
         <form [formGroup]="judgeForm" (ngSubmit)="onJudge()" class="judge-form">
           <div class="form-group">
-            <label>Final Score (Meh)</label>
+            <label>Points</label>
             <div class="score-input-wrapper">
-              <input type="number" step="0.01" formControlName="score" class="form-input">
-              <span class="unit">Meh</span>
+              <input type="number" step="1" formControlName="points" class="form-input">
+              <span class="unit">pts</span>
             </div>
+            <span class="meh-preview">= {{ judgeMehPreview() }} Meh</span>
           </div>
 
           <div class="form-group">
@@ -84,12 +85,13 @@
       <div class="judge-details">
         <form [formGroup]="editForm" (ngSubmit)="onUpdateFriend()" class="judge-form">
           <div class="form-group">
-            <label>Current Score</label>
+            <label>Points</label>
             <div class="score-input-wrapper">
-              <input type="number" step="0.01" formControlName="score" class="form-input">
-              <span class="unit">MEH</span>
+              <input type="number" step="1" formControlName="points" class="form-input">
+              <span class="unit">pts</span>
             </div>
-            @if (editForm.get('score')?.disabled) {
+            <span class="meh-preview">= {{ editMehPreview() }} Meh</span>
+            @if (editForm.get('points')?.disabled) {
             <span class="fixed-score-note">This score is immutable and ordained by the system.</span>
             }
           </div>
@@ -130,7 +132,7 @@
         <img [src]="friend.avatarUrl" [alt]="friend.name" class="mini-avatar">
         <div class="item-info">
           <span class="name">{{ friend.name }}</span>
-          <span class="score">{{ friend.score }} Meh</span>
+          <span class="score">{{ rankingService.toMeh(friend.points) }} Meh · {{ friend.points | number }} pts</span>
         </div>
       </div>
       }
