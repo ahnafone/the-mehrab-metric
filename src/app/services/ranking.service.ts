@@ -28,34 +28,28 @@ export class RankingService {
   private applicationsSignal: Signal<Application[]>;
 
   constructor() {
-    // Wait for auth state before subscribing to Firestore.
-    // Firestore rules require authentication, so listeners started
-    // before auth is ready get permission-denied errors and never recover.
+    // The friends collection is publicly readable, so we subscribe immediately.
+    // Applications still require auth (Mehrab-only), so that listener waits.
     const authUser$ = user(this.auth);
 
-    const friends$ = authUser$.pipe(
-      switchMap(u => {
-        if (!u) return of([] as Friend[]);
-        return new Observable<Friend[]>(subscriber => {
-          const q = query(collection(this.firestore, 'friends'));
-          return onSnapshot(q, (snapshot) => {
-            const friends = snapshot.docs.map(doc => {
-              const data = doc.data() as any;
-              return {
-                ...data,
-                id: doc.id,
-                // Migrate: read `points` with fallback to legacy `score`
-                points: data.points ?? data.score ?? 0,
-                friendType: typeof data.friendType === 'string'
-                  ? friendTypeFromString(data.friendType)
-                  : data.friendType
-              } as Friend;
-            });
-            subscriber.next(friends);
-          }, (error: any) => subscriber.error(error));
+    const friends$ = new Observable<Friend[]>(subscriber => {
+      const q = query(collection(this.firestore, 'friends'));
+      return onSnapshot(q, (snapshot) => {
+        const friends = snapshot.docs.map(doc => {
+          const data = doc.data() as any;
+          return {
+            ...data,
+            id: doc.id,
+            // Migrate: read `points` with fallback to legacy `score`
+            points: data.points ?? data.score ?? 0,
+            friendType: typeof data.friendType === 'string'
+              ? friendTypeFromString(data.friendType)
+              : data.friendType
+          } as Friend;
         });
-      })
-    );
+        subscriber.next(friends);
+      }, (error: any) => subscriber.error(error));
+    });
     this.friendsSignal = toSignal(friends$, { initialValue: [] });
 
     const apps$ = authUser$.pipe(

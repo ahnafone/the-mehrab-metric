@@ -8,10 +8,10 @@ import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
-  { path: '', component: LeaderboardComponent, canActivate: [authGuard] },
+  { path: '', component: LeaderboardComponent },
   { path: 'signup', component: SignupComponent },
   { path: 'admin', component: AdminComponent, canActivate: [authGuard, adminGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: 'login', component: LoginComponent },
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: '' }
 ];

@@ -1,4 +1,17 @@
-<div class="leaderboard-wrapper" [class.has-selection]="selectedFriend()">
+@if (!isAuthenticated()) {
+  <div class="unranked-banner glass-panel" role="complementary" aria-label="Authentication prompt">
+    <div class="unranked-content">
+      <span class="unranked-icon" aria-hidden="true">⚖️</span>
+      <div class="unranked-text">
+        <h2>You lurk here, unranked and unjudged.</h2>
+        <p>Every soul on this list has faced the Supreme Ranker's scrutiny and earned their place in the Metric. The question is — have you?</p>
+      </div>
+      <a routerLink="/login" class="unranked-cta">Submit to the Judgment Today</a>
+    </div>
+  </div>
+}
+
+<div class="leaderboard-wrapper" [class.has-selection]="isAuthenticated() && selectedFriend()">
   <div class="leaderboard-container">
     <div class="friends-list">
       @for (friend of rankingService.sortedFriends(); track friend.id) {
@@ -7,13 +20,13 @@
           [rank]="$index + 1"
           [mehScore]="rankingService.toMeh(friend.points)"
           (click)="selectFriend(friend)"
-          [class.active]="selectedFriend()?.id === friend.id"
+          [class.active]="isAuthenticated() && selectedFriend()?.id === friend.id"
         />
       }
     </div>
   </div>
 
-  @if (selectedFriend(); as friend) {
+  @if (isAuthenticated() && selectedFriend(); as friend) {
     <aside class="details-panel glass-panel">
       <button class="close-button" (click)="closeDetails()">×</button>
 
@@ -70,3 +83,16 @@
     </aside>
   }
 </div>
+
+@if (!isAuthenticated() && selectedFriend(); as friend) {
+  <div class="tease-overlay" role="dialog" aria-modal="true" aria-labelledby="tease-title" (click)="closeDetails()">
+    <div class="tease-panel glass-panel" (click)="$event.stopPropagation()">
+      <button class="close-button" (click)="closeDetails()" aria-label="Dismiss">×</button>
+      <span class="tease-icon" aria-hidden="true">🛡️</span>
+      <h2 id="tease-title">Nice try, peasant.</h2>
+      <p>{{ friend.name }}'s verdict, merits, and full dossier are sealed behind the Sanctum doors. Such juicy details are reserved for the duly judged.</p>
+      <p class="tease-aside">Care to throw your hat in the ring?</p>
+      <a routerLink="/login" class="tease-cta">Submit to the Judgment Today</a>
+    </div>
+  </div>
+}
