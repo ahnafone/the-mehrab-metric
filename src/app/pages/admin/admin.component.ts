@@ -72,7 +72,7 @@ export class AdminComponent {
     this.selectedFriend.set(friend);
     this.selectedApplication.set(null);
 
-    const isFixed = friend.name.toLowerCase() === 'mehrab' || friend.name.toLowerCase() === 'ishmam';
+    const isFixed = friend.name.toLowerCase() === 'mehrab';
 
     this.editForm.patchValue({
       points: friend.points,
