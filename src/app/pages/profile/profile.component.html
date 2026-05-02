@@ -5,10 +5,33 @@
       <!-- Sidebar / Info Card -->
       <aside class="profile-sidebar glass-panel">
         <div class="avatar-section">
-          <div class="avatar-wrapper">
-            <img [src]="profile()?.avatarUrl || fbUser.photoURL" [alt]="fbUser.displayName" class="profile-avatar">
+          <div class="avatar-wrapper" [class.menu-open]="isAvatarMenuOpen()">
+            <img [src]="avatarUrl()" [alt]="fbUser.displayName" class="profile-avatar">
+            <div class="avatar-change-trigger ">
+              <button type="button" class="cursor-pointer avatar-change-btn" (click)="toggleAvatarMenu()"
+                [attr.aria-expanded]="isAvatarMenuOpen()" aria-haspopup="menu" aria-label="Change avatar">
+                <fa-icon [icon]="faEdit" class="text-white"></fa-icon>
+              </button>
+            </div>
 
+            <div class="avatar-change-menu" role="menu">
+              <button type="button" class="avatar-menu-item" role="menuitem" [disabled]="isUpdatingAvatar()"
+                (click)="useDicebearAvatar()">
+                Use Dicebear Avatar
+              </button>
+              <button type="button" class="avatar-menu-item" role="menuitem" [disabled]="isUpdatingAvatar()"
+                (click)="useGoogleAvatar()">
+                Use Google Profile Picture
+              </button>
+              <button type="button" class="avatar-menu-item" role="menuitem" [disabled]="isUpdatingAvatar()"
+                (click)="useCustomAvatarLink()">
+                Use Custom Link
+              </button>
+            </div>
           </div>
+          @if (avatarUpdateMessage(); as message) {
+          <p class="avatar-update-message">{{ message }}</p>
+          }
           <h1 class="user-name">{{ profile()?.name || fbUser.displayName }}</h1>
           <p class="user-email">
             <fa-icon [icon]="faEnvelope"></fa-icon>
@@ -27,10 +50,12 @@
             <span class="stat-label">Meh Score</span>
             <span class="stat-value text-gradient">{{ mehScore() }}</span>
           </div>
+          @if (p.friendType === 0) {
           <div class="stat-card">
             <span class="stat-label">Raw Points</span>
             <span class="stat-value">{{ p.points | number }}</span>
           </div>
+          }
           <div class="stat-card">
             <span class="stat-label">Global Rank</span>
             <span class="stat-value">#{{ rank() }} / {{ totalRanked() }}</span>
@@ -136,3 +161,30 @@
     }
   </div>
 </div>
+
+@if (isCustomUrlModalOpen()) {
+<div class="modal-backdrop" (click)="closeCustomUrlModal()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-content glass-panel" (click)="$event.stopPropagation()">
+    <h3 id="modal-title" class="modal-title">Custom Avatar URL</h3>
+    <p class="modal-description">Paste a direct image URL for your avatar:</p>
+    <div class="modal-input-container">
+      <input 
+        type="url" 
+        [value]="customUrlInput()" 
+        (input)="updateCustomUrlInput($event)" 
+        placeholder="https://example.com/avatar.png" 
+        class="modal-input" 
+        (keyup.enter)="submitCustomUrl()" 
+        (keyup.escape)="closeCustomUrlModal()"
+        autofocus
+      >
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="modal-btn secondary" (click)="closeCustomUrlModal()">Cancel</button>
+      <button type="button" class="modal-btn primary" (click)="submitCustomUrl()" [disabled]="!customUrlInput().trim()">
+        Update Avatar
+      </button>
+    </div>
+  </div>
+</div>
+}
