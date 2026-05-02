@@ -11,6 +11,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Angular CLI
+        run: npm install -g @angular/cli
+
+      - name: Build
+        run: npm run build
       - run: ng build && firebase deploy --only hosting:the-mehrab-metric
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
