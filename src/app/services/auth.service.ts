@@ -2,7 +2,7 @@ import { Injectable, inject, computed } from '@angular/core';
 import { Auth, user, signOut, GoogleAuthProvider, signInWithPopup, UserCredential } from '@angular/fire/auth';
 import { doc, Firestore, getDoc } from '@angular/fire/firestore';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { RankingService } from './ranking.service';
+import { FriendsService } from './friends.service';
 import { FriendType } from '../models/friend';
 
 @Injectable({
@@ -11,7 +11,7 @@ import { FriendType } from '../models/friend';
 export class AuthService {
   private auth = inject(Auth);
   private firestore = inject(Firestore);
-  private rankingService = inject(RankingService);
+  private friendsService = inject(FriendsService);
 
   // Expose the current user as a signal
   currentUser = toSignal(user(this.auth));
@@ -22,7 +22,7 @@ export class AuthService {
     if (!fbUser) return null;
 
     // Find the friend entry that matches the logged-in email
-    return this.rankingService.sortedFriends().find(f => f.email === fbUser.email);
+    return this.friendsService.sortedFriends().find(f => f.email === fbUser.email);
   });
 
   isMehrab = computed(() => this.currentProfile()?.friendType === FriendType.Mehrab);

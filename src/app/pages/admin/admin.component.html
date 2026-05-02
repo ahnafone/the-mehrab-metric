@@ -219,7 +219,7 @@
         <img [src]="friend.avatarUrl" [alt]="friend.name" class="mini-avatar">
         <div class="item-info">
           <span class="name">{{ friend.name }}</span>
-          <span class="score">{{ rankingService.toMeh(friend.points) }} Meh · {{ friend.points | number }} pts</span>
+          <span class="score">{{ friendsService.toMeh(friend.points) }} Meh · {{ friend.points | number }} pts</span>
         </div>
       </div>
       }

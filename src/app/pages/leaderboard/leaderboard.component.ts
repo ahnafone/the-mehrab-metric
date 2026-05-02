@@ -1,6 +1,6 @@
+import { FriendsService } from '../../services/friends.service';
 import { AuthService } from './../../services/auth.service';
 import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
-import { RankingService } from '../../services/ranking.service';
 import { Friend } from '../../models/friend';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -14,7 +14,7 @@ import { FriendCardComponent } from '../../components/friend-card/friend-card.co
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LeaderboardComponent {
-  rankingService = inject(RankingService);
+  friendsService = inject(FriendsService);
   authService = inject(AuthService);
   selectedFriend = signal<Friend | null>(null);
   isAuthenticated = computed(() => !!this.authService.currentUser());

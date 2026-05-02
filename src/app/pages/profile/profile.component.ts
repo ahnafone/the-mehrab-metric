@@ -1,7 +1,8 @@
 import { Component, ChangeDetectionStrategy, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
-import { RankingService } from '../../services/ranking.service';
+import { FriendsService } from '../../services/friends.service';
+import { ApplicationsService } from '../../services/applications.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {
   faStar,
@@ -26,7 +27,8 @@ import {
 })
 export class ProfileComponent {
   public authService = inject(AuthService);
-  public rankingService = inject(RankingService);
+  public friendsService = inject(FriendsService);
+  public applicationsService = inject(ApplicationsService);
 
   // Icons
   faStar = faStar;
@@ -46,28 +48,28 @@ export class ProfileComponent {
   profile = computed(() => {
     const email = this.user()?.email;
     if (!email) return null;
-    return this.rankingService.sortedFriends().find(f => f.email === email);
+    return this.friendsService.sortedFriends().find(f => f.email === email);
   });
 
   pendingApplication = computed(() => {
     const email = this.user()?.email;
     if (!email) return null;
-    return this.rankingService.applications().find(a => a.email === email);
+    return this.applicationsService.applications().find(a => a.email === email);
   });
 
   rank = computed(() => {
     const email = this.user()?.email;
     if (!email) return -1;
-    const index = this.rankingService.sortedFriends().findIndex(f => f.email === email);
+    const index = this.friendsService.sortedFriends().findIndex(f => f.email === email);
     return index !== -1 ? index + 1 : -1;
   });
 
-  totalRanked = computed(() => this.rankingService.sortedFriends().length);
+  totalRanked = computed(() => this.friendsService.sortedFriends().length);
 
   mehScore = computed(() => {
     const p = this.profile();
     if (!p) return 0;
-    return this.rankingService.toMeh(p.points);
+    return this.friendsService.toMeh(p.points);
   });
 
   status = computed(() => {

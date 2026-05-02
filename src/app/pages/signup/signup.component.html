@@ -134,17 +134,37 @@
     @if (currentStep() < steps.length - 1) { <button type="button" (click)="nextStep()" class="nav-button next-button">
       Next
       </button>
+    } @else {
+      @if (currentUser()) {
+        <button type="submit" [disabled]="signupForm.invalid || isSubmitting()" class="submit-button">
+          @if (isSubmitting()) {
+            Processing...
+          } @else {
+            Submit Application
+          }
+        </button>
       } @else {
-      <button type="submit" [disabled]="signupForm.invalid || isSubmitting()" class="submit-button">
-        @if (isSubmitting()) {
-        Processing...
-        } @else {
-        Submit Application
-        }
-      </button>
+        <button type="button" (click)="onSignInClick()" [disabled]="isSigningIn()" class="submit-button">
+          @if (isSigningIn()) {
+            Signing in...
+          } @else {
+            Sign in to submit
+          }
+        </button>
+      }
       }
   </div>
   </form>
+
+  @if (currentStep() === steps.length - 1 && !currentUser()) {
+  <p class="help-text">Please sign in to submit your application.</p>
+  }
+
+  @if (authMessage()) {
+  <div class="error-text">
+    {{ authMessage() }}
+  </div>
+  }
 
   @if (successMessage()) {
   <div class="success-banner slide-in">

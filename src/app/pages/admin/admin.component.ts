@@ -1,11 +1,12 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators, FormGroup, FormControl } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { RankingService } from '../../services/ranking.service';
+import { FriendsService } from '../../services/friends.service';
+import { ApplicationsService } from '../../services/applications.service';
 import { AuthService } from '../../services/auth.service';
 import { Friend, Application, FriendType } from '../../models/friend';
-import { SUCCESS_SCORE_QUESTIONS, Question, QuestionOption } from '../signup/signup.component';
+import { SUCCESS_SCORE_QUESTIONS, Question } from '../../models/question';
 import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
@@ -22,13 +23,14 @@ export class AdminComponent {
 
   private fb = inject(FormBuilder);
   private router = inject(Router);
-  public rankingService = inject(RankingService);
+  public friendsService = inject(FriendsService);
+  public applicationsService = inject(ApplicationsService);
   private authService = inject(AuthService);
 
   questions = SUCCESS_SCORE_QUESTIONS;
 
-  applications = this.rankingService.applications;
-  friends = this.rankingService.sortedFriends;
+  applications = this.applicationsService.applications;
+  friends = this.friendsService.sortedFriends;
 
   selectedApplication = signal<Application | null>(null);
   selectedFriend = signal<Friend | null>(null);
@@ -56,13 +58,13 @@ export class AdminComponent {
   /** Live Meh preview for the judge form */
   judgeMehPreview = computed(() => {
     const pts = this.judgeForm.get('points')?.value ?? 0;
-    return this.rankingService.toMeh(pts);
+    return this.friendsService.toMeh(pts);
   });
 
   /** Live Meh preview for the edit form */
   editMehPreview = computed(() => {
     const pts = this.editForm.get('points')?.value ?? 0;
-    return this.rankingService.toMeh(pts);
+    return this.friendsService.toMeh(pts);
   });
 
   private buildAnswersForm(initialAnswers: any = null): FormGroup {
@@ -171,7 +173,7 @@ export class AdminComponent {
     if (app && this.judgeForm.valid) {
       const { points, reasoning, answers } = this.judgeForm.getRawValue();
       try {
-        await this.rankingService.judgeApplication(app.id, points!, reasoning!, answers);
+        await this.applicationsService.judgeApplication(app.id, points!, reasoning!, answers);
         this.selectedApplication.set(null);
         this.judgeForm.reset({ points: 500, reasoning: '' });
       } catch (error) {
@@ -185,7 +187,7 @@ export class AdminComponent {
     if (friend && this.editForm.valid) {
       const { points, reasoning, answers } = this.editForm.getRawValue();
       try {
-        await this.rankingService.updateFriend(friend.id, {
+        await this.friendsService.updateFriend(friend.id, {
           points: points!,
           reasoning: reasoning!,
           answers: answers
@@ -206,7 +208,7 @@ export class AdminComponent {
 
     if (confirm(`Are you sure you want to delete ${friend.name} from the metric?`)) {
       try {
-        await this.rankingService.deleteFriend(friend.id);
+        await this.friendsService.deleteFriend(friend.id);
         if (this.selectedFriend()?.id === friend.id) {
           this.selectedFriend.set(null);
         }
