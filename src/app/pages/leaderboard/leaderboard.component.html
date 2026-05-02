@@ -38,15 +38,16 @@
             <span class="value">{{ friendsService.toMeh(friend.points) }}</span>
             <span class="unit">Meh</span>
           </div>
+          @if (friend.friendType === 0) {
+          <div class="details-score-sm">
+            <span class="value">{{ friend.points | number }}</span>
+            <span class="unit">Points</span>
+          </div>
+          }
         </div>
       </div>
 
       <div class="details-content">
-        <section class="details-section">
-          <h3>Raw Points</h3>
-          <p class="details-points">{{ friend.points | number }} points</p>
-        </section>
-
         <section class="details-section">
           <h3>The Verdict</h3>
           <p class="details-reasoning">"{{ friend.reasoning }}"</p>
