@@ -57,13 +57,58 @@
         }
 
         <form [formGroup]="judgeForm" (ngSubmit)="onJudge()" class="judge-form">
-          <div class="form-group">
-            <label>Points</label>
-            <div class="score-input-wrapper">
-              <input type="number" step="1" formControlName="points" class="form-input">
-              <span class="unit">pts</span>
+
+          @if (judgeForm.get('answers')) {
+          <div formGroupName="answers" class="questions-list">
+            @for (question of questions; track question.id) {
+            <div class="question-item" [class.expanded]="expandedQuestions()[question.id]">
+              <div class="question-header" (click)="toggleQuestion(question.id)">
+                <label class="question-title">{{ question.title }}</label>
+                @if (!expandedQuestions()[question.id]) {
+                <span class="selected-summary">{{ getSelectedAnswer(question) }}</span>
+                }
+                <span class="toggle-icon">{{ expandedQuestions()[question.id] ? '−' : '+' }}</span>
+              </div>
+
+              @if (expandedQuestions()[question.id]) {
+              @if (question.type === 'single') {
+              <div class="options-grid">
+                @for (option of question.options; track option.label) {
+                <label class="option-card"
+                  [class.selected]="judgeForm.get(['answers', question.id])?.value === option.label">
+                  <input type="radio" [formControlName]="question.id" [value]="option.label" class="hidden-input">
+                  <div class="option-content">
+                    <span class="option-label">{{ option.label }}</span>
+                  </div>
+                </label>
+                }
+              </div>
+              } @else {
+              <div [formGroupName]="question.id" class="options-grid">
+                @for (option of question.options; track option.label) {
+                <label class="option-card"
+                  [class.selected]="judgeForm.get(['answers', question.id, option.label])?.value">
+                  <input type="checkbox" [formControlName]="option.label" class="hidden-input">
+                  <div class="option-content">
+                    <span class="option-label">{{ option.label }}</span>
+                  </div>
+                </label>
+                }
+              </div>
+              }
+              }
             </div>
-            <span class="meh-preview">= {{ judgeMehPreview() }} Meh</span>
+            }
+          </div>
+          }
+
+          <div class="form-group">
+            <label>Calculated Score</label>
+            <div class="points-display-box">
+              <span class="points-value">{{ judgeMehPreview() }}</span>
+              <span class="unit">Meh</span>
+            </div>
+            <span class="meh-preview">{{ judgeForm.get('points')?.value | number }} pts</span>
           </div>
 
           <div class="form-group">
@@ -84,16 +129,58 @@
 
       <div class="judge-details">
         <form [formGroup]="editForm" (ngSubmit)="onUpdateFriend()" class="judge-form">
-          <div class="form-group">
-            <label>Points</label>
-            <div class="score-input-wrapper">
-              <input type="number" step="1" formControlName="points" class="form-input">
-              <span class="unit">pts</span>
+
+          @if (editForm.get('answers')) {
+          <div formGroupName="answers" class="questions-list">
+            @for (question of questions; track question.id) {
+            <div class="question-item" [class.expanded]="expandedQuestions()[question.id]">
+              <div class="question-header" (click)="toggleQuestion(question.id)">
+                <label class="question-title">{{ question.title }}</label>
+                @if (!expandedQuestions()[question.id]) {
+                <span class="selected-summary">{{ getSelectedAnswer(question) }}</span>
+                }
+                <span class="toggle-icon">{{ expandedQuestions()[question.id] ? '−' : '+' }}</span>
+              </div>
+
+              @if (expandedQuestions()[question.id]) {
+              @if (question.type === 'single') {
+              <div class="options-grid">
+                @for (option of question.options; track option.label) {
+                <label class="option-card"
+                  [class.selected]="editForm.get(['answers', question.id])?.value === option.label">
+                  <input type="radio" [formControlName]="question.id" [value]="option.label" class="hidden-input">
+                  <div class="option-content">
+                    <span class="option-label">{{ option.label }}</span>
+                  </div>
+                </label>
+                }
+              </div>
+              } @else {
+              <div [formGroupName]="question.id" class="options-grid">
+                @for (option of question.options; track option.label) {
+                <label class="option-card"
+                  [class.selected]="editForm.get(['answers', question.id, option.label])?.value">
+                  <input type="checkbox" [formControlName]="option.label" class="hidden-input">
+                  <div class="option-content">
+                    <span class="option-label">{{ option.label }}</span>
+                  </div>
+                </label>
+                }
+              </div>
+              }
+              }
             </div>
-            <span class="meh-preview">= {{ editMehPreview() }} Meh</span>
-            @if (editForm.get('points')?.disabled) {
-            <span class="fixed-score-note">This score is immutable and ordained by the system.</span>
             }
+          </div>
+          }
+
+          <div class="form-group">
+            <label>Calculated Score</label>
+            <div class="points-display-box">
+              <span class="points-value">{{ editMehPreview() }}</span>
+              <span class="unit">Meh</span>
+            </div>
+            <span class="meh-preview">{{ editForm.get('points')?.value | number }} pts</span>
           </div>
 
           <div class="form-group">

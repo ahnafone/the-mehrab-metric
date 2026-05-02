@@ -36,6 +36,7 @@ export interface Friend {
   reasoning: string;
   avatarUrl: string;
   merits?: Merit[];
+  answers?: any;
   previousRank?: number;
   friendType: FriendType;
   joinedAt: Date | Timestamp | any;
@@ -48,5 +49,7 @@ export interface Application {
   reasoning: string;
   avatarUrl: string;
   merits: Merit[];
+  score: number;
+  answers: any;
   submittedAt: Date | Timestamp | any;
 }

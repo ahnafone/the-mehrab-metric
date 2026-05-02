@@ -12,26 +12,31 @@
 
     <div class="flex-1 flex justify-end items-center gap-4">
 
-      @if (authService.currentUser(); as user) {
+      <div class="nav-button icon-nav-button join-button" [class.copied]="copied()" (click)="copyInviteLink()"
+        title="Invite a Pleb">
+        <fa-icon [icon]="faInvite"></fa-icon>
+        @if (copied()) {
+        <span class="copy-tooltip">Link Copied!</span>
+        }
+      </div>
+
       <a routerLink="/" class="nav-button icon-nav-button admin-button" title="Leaderboard">
         <fa-icon [icon]="faLeaderboard"></fa-icon>
       </a>
+
+      @if (!authService.currentUser()) {
+      <a routerLink="/login" class="nav-button icon-nav-button admin-button" title="Sign In">
+        <fa-icon [icon]="faLogin"></fa-icon>
+      </a>
       }
-      
+
       @if (authService.isMehrab()) {
       <a routerLink="/admin" class="nav-button icon-nav-button admin-button" title="Bench of Judgment">
         <fa-icon [icon]="faJudge"></fa-icon>
       </a>
       }
-      
-      @if (authService.isPrivileged()) {
-      <div class="nav-button icon-nav-button join-button" [class.copied]="copied()" (click)="copyInviteLink()" title="Invite a Pleb">
-        <fa-icon [icon]="faInvite"></fa-icon>
-        @if (copied()) {
-          <span class="copy-tooltip">Link Copied!</span>
-        }
-      </div>
-      }
+
+
 
       @if (authService.currentUser(); as user) {
       <div class="user-avatar-container">

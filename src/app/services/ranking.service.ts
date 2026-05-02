@@ -1,21 +1,20 @@
 import { Injectable, signal, computed, inject, Signal } from '@angular/core';
 import { Friend, Application, FriendType, friendTypeFromString, friendTypeToString } from '../models/friend';
+
 import {
   Firestore,
+  collectionData,
   collection,
-  onSnapshot,
   doc,
   setDoc,
   deleteDoc,
   updateDoc,
-  addDoc,
   Timestamp,
   query,
-  orderBy
 } from '@angular/fire/firestore';
 import { Auth, user } from '@angular/fire/auth';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { Observable, switchMap, of } from 'rxjs';
+import { Observable, switchMap, of, map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -28,40 +27,33 @@ export class RankingService {
   private applicationsSignal: Signal<Application[]>;
 
   constructor() {
-    // The friends collection is publicly readable, so we subscribe immediately.
-    // Applications still require auth (Mehrab-only), so that listener waits.
+    // Fetch public friends list immediately.
+    // Applications still wait for auth state since they require admin access.
     const authUser$ = user(this.auth);
 
-    const friends$ = new Observable<Friend[]>(subscriber => {
-      const q = query(collection(this.firestore, 'friends'));
-      return onSnapshot(q, (snapshot) => {
-        const friends = snapshot.docs.map(doc => {
-          const data = doc.data() as any;
-          return {
-            ...data,
-            id: doc.id,
-            // Migrate: read `points` with fallback to legacy `score`
-            points: data.points ?? data.score ?? 0,
-            friendType: typeof data.friendType === 'string'
-              ? friendTypeFromString(data.friendType)
-              : data.friendType
-          } as Friend;
-        });
-        subscriber.next(friends);
-      }, (error: any) => subscriber.error(error));
-    });
+    const friends$ = (collectionData(query(collection(this.firestore, 'friends')), { idField: 'id' }) as Observable<any[]>).pipe(
+      map(friends => friends.map(data => ({
+        ...data,
+        // Migrate: read `points` with fallback to legacy `score`
+        points: data.points ?? data.score ?? 0,
+        friendType: typeof data.friendType === 'string'
+          ? friendTypeFromString(data.friendType)
+          : data.friendType,
+        joinedAt: data.joinedAt instanceof Timestamp ? data.joinedAt.toDate() : data.joinedAt
+      } as Friend)))
+    );
     this.friendsSignal = toSignal(friends$, { initialValue: [] });
 
     const apps$ = authUser$.pipe(
       switchMap(u => {
         if (!u) return of([] as Application[]);
-        return new Observable<Application[]>(subscriber => {
-          const q = query(collection(this.firestore, 'applications'));
-          return onSnapshot(q, (snapshot) => {
-            const apps = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Application));
-            subscriber.next(apps);
-          }, (error: any) => subscriber.error(error));
-        });
+        const q = query(collection(this.firestore, 'applications'));
+        return (collectionData(q, { idField: 'id' }) as Observable<any[]>).pipe(
+          map(apps => apps.map(data => ({
+            ...data,
+            submittedAt: data.submittedAt instanceof Timestamp ? data.submittedAt.toDate() : data.submittedAt
+          } as Application)))
+        );
       })
     );
     this.applicationsSignal = toSignal(apps$, { initialValue: [] });
@@ -108,7 +100,7 @@ export class RankingService {
     await setDoc(appDoc, newApp);
   }
 
-  public async judgeApplication(appId: string, points: number, reasoning: string) {
+  public async judgeApplication(appId: string, points: number, reasoning: string, answers: any) {
     await this.snapshotRanks();
     const app = this.applicationsSignal().find(a => a.id === appId);
     if (app) {
@@ -120,6 +112,7 @@ export class RankingService {
         friendType: friendTypeToString(FriendType.Plebeians),
         avatarUrl: app.avatarUrl,
         merits: app.merits,
+        answers: answers,
         joinedAt: Timestamp.now()
       };
 

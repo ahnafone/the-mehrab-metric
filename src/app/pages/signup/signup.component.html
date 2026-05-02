@@ -1,85 +1,155 @@
 <div class="signup-container">
-
-
   <div class="signup-card glass-panel">
-
 
     <div class="signup-header">
       <h2 class="signup-title">Join the <span class="text-gradient">Metric</span></h2>
       <p class="signup-subtitle">Submit your plea to Mehrab for a ranking.</p>
     </div>
 
-    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="signup-form">
-      <!-- Basic Info -->
-      <div class="form-group">
-        <label for="name">Name</label>
-        <input id="name" type="text" formControlName="name" placeholder="Your full name" class="form-input">
-        @if (signupForm.get('name')?.invalid && signupForm.get('name')?.touched) {
-        <span class="error-text">Name is required</span>
-        }
+    <!-- Step Progress Indicator -->
+    <div class="step-indicator">
+      <div class="step-text">Step {{ currentStep() + 1 }} of {{ steps.length }}: <span class="step-name">{{
+          steps[currentStep()] }}</span></div>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="((currentStep() + 1) / steps.length) * 100"></div>
       </div>
-
-      <div class="form-group">
-        <label for="reasoning">Why do you deserve a rank?</label>
-        <textarea id="reasoning" formControlName="reasoning" placeholder="Explain yourself to Mehrab..."
-          class="form-input textarea" rows="3"></textarea>
-        @if (signupForm.get('reasoning')?.invalid && signupForm.get('reasoning')?.touched) {
-        <span class="error-text">You must provide a reason</span>
-        }
-      </div>
-
-      <!-- Avatar Section -->
-      <div class="form-group">
-        <label for="avatarUrl">Profile Picture URL</label>
-        <input id="avatarUrl" type="text" formControlName="avatarUrl" placeholder="https://example.com/photo.jpg"
-          class="form-input">
-        <p class="help-text">Leave empty to use a default avatar based on your name.</p>
-      </div>
-
-      <!-- Merits Section -->
-      <div class="form-section">
-        <div class="section-header">
-          <label class="section-label">Additional Merits</label>
-          <button type="button" (click)="addMerit()" class="add-button small">
-            + Add Merit
-          </button>
-        </div>
-
-        <div formArrayName="merits" class="merits-list">
-          @for (merit of merits.controls; track $index) {
-          <div [formGroupName]="$index" class="merit-item glass-panel">
-            <div class="form-group">
-              <input type="text" formControlName="title" placeholder="Merit Title (e.g. Portfolio)"
-                class="form-input small">
-            </div>
-            <div class="form-group">
-              <input type="text" formControlName="link" placeholder="https://..." class="form-input small">
-            </div>
-            <button type="button" (click)="removeMerit($index)" class="remove-button">
-              &times;
-            </button>
-          </div>
-          } @empty {
-          <p class="empty-text">No additional merits added yet.</p>
-          }
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <button type="submit" [disabled]="signupForm.invalid || isSubmitting()" class="submit-button">
-          @if (isSubmitting()) {
-          Processing...
-          } @else {
-          Submit Application
-          }
-        </button>
-      </div>
-    </form>
-
-    @if (successMessage()) {
-    <div class="success-banner">
-      {{ successMessage() }}
     </div>
-    }
+
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="signup-form">
+
+      <!-- Step 0: Profile -->
+      @if (currentStep() === 0) {
+      <div class="form-section slide-in">
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input id="name" type="text" formControlName="name" placeholder="Your full name" class="form-input">
+          @if (signupForm.get('name')?.invalid && signupForm.get('name')?.touched) {
+          <span class="error-text">Name is required</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="reasoning">Why do you deserve a rank?</label>
+          <textarea id="reasoning" formControlName="reasoning" placeholder="Explain yourself to Mehrab..."
+            class="form-input textarea" rows="3"></textarea>
+          @if (signupForm.get('reasoning')?.invalid && signupForm.get('reasoning')?.touched) {
+          <span class="error-text">You must provide a reason</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="avatarUrl">Profile Picture URL</label>
+          <input id="avatarUrl" type="text" formControlName="avatarUrl" placeholder="https://example.com/photo.jpg"
+            class="form-input">
+          <p class="help-text">Leave empty to use a default avatar based on your name.</p>
+        </div>
+
+        <div formGroupName="answers" class="form-group">
+          <label for="dickSize">Your Dick Size (Erect) (if any)</label>
+          <select id="dickSize" formControlName="dickSize" class="form-input">
+            @for (option of getOptionsForQuestion('dickSize'); track option.label) {
+            <option [value]="option.label">{{ option.label }}</option>
+            }
+          </select>
+          <p class="help-text">Don't lie, <em>we'll know</em>.</p>
+        </div>
+      </div>
+      }
+
+      <!-- Steps 1 to 4: Questionnaires -->
+      @if (currentStep() > 0 && currentStep() < 5) { <div class="form-section slide-in">
+        <div formGroupName="answers" class="questions-list">
+          @for (question of getQuestionsForCurrentStep(); track question.id) {
+          <div class="question-item">
+            <label class="question-title">{{ question.title }}</label>
+
+            @if (question.type === 'single') {
+            <div class="options-grid">
+              @for (option of question.options; track option.label) {
+              <label class="option-card" [class.selected]="answersValue()[question.id] === option.label">
+                <input type="radio" [formControlName]="question.id" [value]="option.label" class="hidden-input">
+                <div class="option-content">
+                  <span class="option-label">{{ option.label }}</span>
+                </div>
+              </label>
+              }
+            </div>
+            } @else {
+            <div [formGroupName]="question.id" class="options-grid">
+              @for (option of question.options; track option.label) {
+              <label class="option-card" [class.selected]="answersValue()[question.id]?.[option.label]">
+                <input type="checkbox" [formControlName]="option.label" class="hidden-input">
+                <div class="option-content">
+                  <span class="option-label">{{ option.label }}</span>
+                </div>
+              </label>
+              }
+            </div>
+            }
+          </div>
+          }
+        </div>
   </div>
+  }
+
+  <!-- Step 5: Merits -->
+  @if (currentStep() === 5) {
+  <div class="form-section slide-in">
+    <div class="section-header">
+      <label class="section-label">Additional Merits</label>
+      <button type="button" (click)="addMerit()" class="add-button small">
+        + Add Merit
+      </button>
+    </div>
+
+    <div formArrayName="merits" class="merits-list">
+      @for (merit of merits.controls; track $index) {
+      <div [formGroupName]="$index" class="merit-item glass-panel">
+        <div class="form-group">
+          <input type="text" formControlName="title" placeholder="Merit Title (e.g. Portfolio)"
+            class="form-input small">
+        </div>
+        <div class="form-group">
+          <input type="text" formControlName="link" placeholder="https://..." class="form-input small">
+        </div>
+        <button type="button" (click)="removeMerit($index)" class="remove-button">&times;</button>
+      </div>
+      } @empty {
+      <p class="empty-text">No additional merits added yet.</p>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- Form Actions (Next / Prev / Submit) -->
+  <div class="form-actions-row">
+    @if (currentStep() > 0) {
+    <button type="button" (click)="prevStep()" class="nav-button prev-button">
+      Back
+    </button>
+    }
+
+    <div class="spacer"></div>
+
+    @if (currentStep() < steps.length - 1) { <button type="button" (click)="nextStep()" class="nav-button next-button">
+      Next
+      </button>
+      } @else {
+      <button type="submit" [disabled]="signupForm.invalid || isSubmitting()" class="submit-button">
+        @if (isSubmitting()) {
+        Processing...
+        } @else {
+        Submit Application
+        }
+      </button>
+      }
+  </div>
+  </form>
+
+  @if (successMessage()) {
+  <div class="success-banner slide-in">
+    {{ successMessage() }}
+  </div>
+  }
+</div>
 </div>

@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
-import { faChartBar, faGavel, faUserPlus, faSignOutAlt, faUser, faShareNodes, faRankingStar } from '@fortawesome/free-solid-svg-icons';
+import { faChartBar, faGavel, faSignOutAlt, faUser, faShareNodes, faRankingStar, faRightToBracket } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { AuthService } from '../../services/auth.service';
 
@@ -25,6 +25,7 @@ export class HeaderComponent {
   faLogout = faSignOutAlt;
   faUser = faUser;
   faLeaderboard = faRankingStar;
+  faLogin = faRightToBracket;
 
   copied = signal(false);
   isDropdownOpen = signal(false);
