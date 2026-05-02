@@ -5,7 +5,6 @@ import { Friend } from '../../models/friend';
 @Component({
   selector: 'app-friend-card',
   standalone: true,
-  imports: [DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div 
@@ -58,7 +57,6 @@ import { Friend } from '../../models/friend';
               <span class="score-value">{{ mehScore() }}</span>
               <span class="score-label">Meh</span>
             </div>
-            <span class="points-label">{{ friend().points | number }} pts</span>
           </div>
         </div>
         
