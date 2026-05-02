@@ -13,7 +13,7 @@ service cloud.firestore {
     }
 
     match /friends/{uid} {
-      // Any one can read the leaderboard
+      // The leaderboard is public — any visitor can witness the rankings
       allow read: if true;
       
       // Only Mehrab can create new friends (via judgment)

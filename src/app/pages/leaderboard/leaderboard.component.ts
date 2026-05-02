@@ -1,20 +1,23 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { AuthService } from './../../services/auth.service';
+import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
 import { RankingService } from '../../services/ranking.service';
 import { Friend } from '../../models/friend';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { FriendCardComponent } from '../../components/friend-card/friend-card.component';
 
 @Component({
   selector: 'app-leaderboard',
-  standalone: true,
-  imports: [FriendCardComponent, CommonModule],
+  imports: [FriendCardComponent, CommonModule, RouterLink],
   templateUrl: './leaderboard.component.html',
   styleUrl: './leaderboard.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LeaderboardComponent {
   rankingService = inject(RankingService);
+  authService = inject(AuthService);
   selectedFriend = signal<Friend | null>(null);
+  isAuthenticated = computed(() => !!this.authService.currentUser());
 
   selectFriend(friend: Friend) {
     this.selectedFriend.set(friend);
