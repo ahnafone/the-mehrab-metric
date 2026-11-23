@@ -11,6 +11,9 @@
   },
   "private": true,
   "packageManager": "npm@11.6.2",
+  "overrides": {
+    "@grpc/grpc-js": "^1.13.6"
+  },
   "dependencies": {
     "@angular/common": "^21.2.26",
     "@angular/compiler": "^21.2.26",
